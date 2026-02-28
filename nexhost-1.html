@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexHost — WhatsApp Bot Hosting</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{
+  --bg:#080b12;--bg2:#0d1120;--bg3:#121826;
+  --card:#141a27;--card2:#1a2235;
+  --border:#1e2d45;--border2:#243350;
+  --accent:#00d4ff;--accent2:#0099cc;
+  --green:#00e676;--yellow:#ffd600;--red:#ff4757;--purple:#7c4dff;--orange:#ff8c42;
+  --text:#e8edf5;--text2:#8a9bb8;--text3:#5a6a85;
+  --glow:0 0 20px rgba(0,212,255,.3);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+h1,h2,h3,h4,h5{font-family:'Syne',sans-serif}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.hidden{display:none!important}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:10px;animation:slideIn .3s ease;min-width:260px;max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast.success{border-color:var(--green)}.toast.error{border-color:var(--red)}.toast.info{border-color:var(--accent)}.toast.warn{border-color:var(--yellow)}
+.toast.success i{color:var(--green)}.toast.error i{color:var(--red)}.toast.info i{color:var(--accent)}.toast.warn i{color:var(--yellow)}
+@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideOut{to{transform:translateX(110%);opacity:0}}
+
+/* ── OVERLAY / MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:800;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:32px;width:100%;max-width:500px;position:relative;animation:modalIn .3s cubic-bezier(.16,1,.3,1)}
+@keyframes modalIn{from{transform:translateY(30px) scale(.97);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+.modal-close{position:absolute;top:14px;right:14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:.2s;font-size:13px}
+.modal-close:hover{color:var(--text);border-color:var(--border2)}
+.modal h2{font-size:20px;margin-bottom:4px}
+.modal .sub{color:var(--text2);font-size:13px;margin-bottom:22px}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:14px;transition:.2s;outline:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.08)}
+.form-group input::placeholder,.form-group textarea::placeholder{color:var(--text3)}
+.form-group select option{background:var(--card);color:var(--text)}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:42px}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text3);transition:.2s;font-size:14px;background:none;border:none}
+.pw-toggle:hover{color:var(--text2)}
+.strength-bar{display:flex;gap:4px;margin-top:5px}
+.strength-bar span{flex:1;height:3px;border-radius:2px;background:var(--border);transition:.3s}
+.strength-label{font-size:11px;color:var(--text3);margin-top:3px;height:14px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 20px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:.2s;text-decoration:none;white-space:nowrap;position:relative;overflow:hidden}
+.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);transform:translateX(-100%) skewX(-15deg);transition:transform .4s ease}
+.btn:hover::after{transform:translateX(100%) skewX(-15deg)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:var(--glow)}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-ghost{background:var(--card2);border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--border2);background:var(--bg3)}
+.btn-danger{background:rgba(255,71,87,.12);border:1px solid rgba(255,71,87,.3);color:var(--red)}
+.btn-danger:hover{background:rgba(255,71,87,.22)}
+.btn-success{background:linear-gradient(135deg,#00e676,#00b248);color:#000}
+.btn-success:hover{transform:translateY(-1px);box-shadow:0 0 20px rgba(0,230,118,.3)}
+.btn-sm{padding:7px 13px;font-size:12px;border-radius:8px}
+.btn-block{width:100%;justify-content:center}
+
+/* ── LANDING ── */
+#landing{min-height:100vh}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(8,11,18,.85);backdrop-filter:blur(14px);border-bottom:1px solid rgba(30,45,69,.5);transition:.3s}
+nav.scrolled{background:rgba(8,11,18,.97);box-shadow:0 4px 30px rgba(0,0,0,.5)}
+.nav-logo{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:9px;cursor:pointer}
+.logo-icon{width:33px;height:33px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;transition:.3s}
+.nav-logo:hover .logo-icon{transform:rotate(15deg) scale(1.1)}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:13px;font-weight:500;transition:.2s;cursor:pointer;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1.5px;background:var(--accent);transition:.3s}
+.nav-links a:hover{color:var(--text)}.nav-links a:hover::after{width:100%}
+.nav-actions{display:flex;gap:8px;align-items:center}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
+.hamburger span{width:21px;height:2px;background:var(--text2);border-radius:2px;transition:.3s}
+.mobile-nav{display:none;position:fixed;top:63px;left:0;right:0;background:var(--bg3);border-bottom:1px solid var(--border);padding:18px;z-index:99;flex-direction:column;gap:4px}
+.mobile-nav.open{display:flex}
+.mobile-nav a{color:var(--text2);text-decoration:none;font-size:14px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:.2s}
+.mobile-nav a:hover{background:var(--card);color:var(--text)}
+
+/* HERO */
+.hero{padding:150px 40px 90px;text-align:center;position:relative;overflow:hidden}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(30,45,69,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(30,45,69,.25) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 40%,transparent 100%)}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;animation:floatOrb 14s ease-in-out infinite}
+@keyframes floatOrb{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(28px,-18px) scale(1.04)}66%{transform:translate(-18px,14px) scale(.97)}}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.35),transparent);animation:scanDown 7s linear infinite;pointer-events:none}
+@keyframes scanDown{0%{top:-5%}100%{top:105%}}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.2);border-radius:100px;padding:5px 14px;font-size:12px;color:var(--accent);margin-bottom:22px;animation:fadeUp .6s .2s both}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero h1{font-size:clamp(38px,6vw,76px);font-weight:800;line-height:1.06;margin-bottom:18px}
+.hero-word{display:inline-block;opacity:0;transform:translateY(28px);animation:fadeUp .6s cubic-bezier(.16,1,.3,1) both}
+.grad-text{background:linear-gradient(135deg,var(--accent),var(--purple),#00ff88);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gradShift 4s ease infinite}
+@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero p{font-size:17px;color:var(--text2);max-width:520px;margin:0 auto 32px;line-height:1.75;opacity:0;animation:fadeUp .6s 1s both}
+.hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp .6s 1.1s both}
+.hero-stats{display:flex;gap:44px;justify-content:center;margin-top:60px;flex-wrap:wrap;opacity:0;animation:fadeUp .6s 1.3s both}
+.hero-stat .num{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:var(--accent);transition:.3s}
+.hero-stat:hover .num{transform:scale(1.12);color:var(--text)}
+.hero-stat .lbl{font-size:12px;color:var(--text3);margin-top:3px}
+
+/* SECTIONS */
+.section{padding:80px 40px}
+.section-header{text-align:center;margin-bottom:56px}
+.chip{display:inline-block;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.2);color:var(--accent);font-size:11px;padding:4px 12px;border-radius:100px;margin-bottom:12px;font-weight:700;letter-spacing:.5px}
+.section-header h2{font-size:clamp(26px,4vw,42px);font-weight:800;margin-bottom:10px}
+.section-header p{color:var(--text2);font-size:15px;max-width:480px;margin:0 auto;line-height:1.7}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.reveal-left{opacity:0;transform:translateX(-44px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.reveal-right{opacity:0;transform:translateX(44px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.reveal.visible,.reveal-left.visible,.reveal-right.visible{opacity:1;transform:none}
+.d1{transition-delay:.05s}.d2{transition-delay:.12s}.d3{transition-delay:.19s}.d4{transition-delay:.26s}.d5{transition-delay:.33s}.d6{transition-delay:.4s}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;max-width:1100px;margin:0 auto}
+.feature-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:26px;transition:.3s;position:relative;overflow:hidden}
+.feature-card::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);transition:left .5s ease;transform:skewX(-15deg)}
+.feature-card:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.35)}.feature-card:hover::after{left:140%}
+.feature-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:14px}
+.feature-card h3{font-size:16px;margin-bottom:7px}
+.feature-card p{font-size:13px;color:var(--text2);line-height:1.7}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:980px;margin:0 auto}
+.plan-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:30px;transition:.3s;position:relative;overflow:hidden}
+.plan-card.popular{border-color:var(--accent)}
+.plan-card.popular::before{content:'Most Popular';position:absolute;top:14px;right:-26px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-size:10px;font-weight:800;padding:4px 34px;transform:rotate(45deg);font-family:'Syne',sans-serif;letter-spacing:.5px}
+.plan-card:hover{transform:translateY(-5px);box-shadow:0 20px 48px rgba(0,0,0,.4)}
+.plan-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px}
+.plan-price{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;margin:14px 0 4px}
+.plan-price span{font-size:15px;color:var(--text2);font-family:'DM Sans',sans-serif;font-weight:400}
+.plan-desc{font-size:12px;color:var(--text2);margin-bottom:22px}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:26px}
+.plan-features li{font-size:13px;display:flex;align-items:center;gap:8px}
+.plan-features li i{font-size:11px;width:16px;text-align:center}
+.plan-features li i.fa-check{color:var(--green)}.plan-features li i.fa-xmark{color:var(--red)}
+
+/* COINS */
+.coins-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;max-width:880px;margin:0 auto}
+.coin-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;text-align:center;transition:.3s cubic-bezier(.34,1.56,.64,1);cursor:pointer}
+.coin-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 20px 40px rgba(0,0,0,.4)}
+.coin-card.featured{border-color:var(--accent)}
+.coin-card:hover{border-color:var(--yellow)}
+.coin-icon{font-size:30px;margin-bottom:10px;display:block}
+.coin-amount{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--yellow)}
+.coin-price{font-size:20px;font-weight:700;color:var(--text);margin:3px 0}
+.coin-badge{font-size:10px;background:rgba(0,230,118,.12);color:var(--green);border-radius:100px;padding:2px 8px;display:inline-block;margin-top:4px;font-weight:600}
+
+/* HOW IT WORKS */
+.steps{display:flex;max-width:880px;margin:0 auto;flex-wrap:wrap}
+.step{flex:1;min-width:190px;text-align:center;padding:22px;position:relative}
+.step:not(:last-child)::after{content:'';position:absolute;top:34px;right:0;width:1px;height:44px;background:linear-gradient(to bottom,var(--border2),transparent)}
+.step-num{width:54px;height:54px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:var(--accent);margin:0 auto 14px;transition:.3s;position:relative}
+.step-num::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--accent);opacity:0;animation:pingRing 2.5s ease-out infinite}
+@keyframes pingRing{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.5);opacity:0}}
+.step:hover .step-num{border-color:var(--accent);background:rgba(0,212,255,.08)}
+.step h3{font-size:14px;margin-bottom:6px}
+.step p{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:56px 40px 28px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:36px;max-width:1080px;margin:0 auto}
+.footer-brand p{font-size:13px;color:var(--text2);line-height:1.75;margin-top:12px}
+.footer-col h4{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:14px;letter-spacing:.5px}
+.footer-col a{display:block;font-size:13px;color:var(--text2);text-decoration:none;margin-bottom:8px;transition:.2s;cursor:pointer}
+.footer-col a:hover{color:var(--accent);padding-left:6px}
+.footer-bottom{border-top:1px solid var(--border);margin-top:36px;padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;max-width:1080px;margin-inline:auto}
+.footer-bottom p{font-size:12px;color:var(--text3)}
+.socials{display:flex;gap:10px}
+.socials a{width:32px;height:32px;border-radius:8px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:13px;transition:.2s;cursor:pointer;text-decoration:none}
+.socials a:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+
+/* ══════════════ DASHBOARD ══════════════ */
+#dashboard{display:none;min-height:100vh}
+.dash-layout{display:grid;grid-template-columns:256px 1fr;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;width:256px;height:100vh;display:flex;flex-direction:column;z-index:50;transition:.3s}
+.sidebar-logo{padding:20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.sidebar-logo span{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}
+.sidebar-nav{flex:1;padding:14px 10px;overflow-y:auto}
+.nav-section{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:10px 10px 4px;margin-top:6px;font-weight:700}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;cursor:pointer;transition:.2s;color:var(--text2);font-size:13px;font-weight:500;position:relative;user-select:none}
+.nav-item:hover{background:var(--card);color:var(--text);transform:translateX(3px)}
+.nav-item.active{background:rgba(0,212,255,.1);color:var(--accent)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;background:var(--accent);border-radius:0 2px 2px 0}
+.nav-item i{width:17px;text-align:center;font-size:14px;transition:.3s}
+.nav-item:hover i{transform:scale(1.15)}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;padding:2px 5px;border-radius:100px;font-weight:800;min-width:16px;text-align:center}
+.nav-badge.green{background:var(--green);color:#000}
+.sidebar-footer{padding:14px 16px;border-top:1px solid var(--border)}
+.user-pill{display:flex;align-items:center;gap:9px;padding:10px;border-radius:10px;background:var(--card);border:1px solid var(--border)}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:#000;flex-shrink:0}
+.user-info .name{font-size:12px;font-weight:700}
+.user-info .role{font-size:10px;color:var(--accent)}
+
+/* MAIN */
+.dash-main{margin-left:256px;padding:24px;min-height:100vh;max-width:calc(100vw - 256px)}
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px}
+.dash-title h2{font-size:20px;font-weight:800}
+.dash-title p{font-size:12px;color:var(--text2);margin-top:2px}
+.dash-header-actions{display:flex;align-items:center;gap:10px}
+.icon-btn{width:38px;height:38px;border-radius:9px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);position:relative;transition:.2s}
+.icon-btn:hover{border-color:var(--border2);color:var(--text)}
+.notif-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--red);border:2px solid var(--bg2)}
+.menu-toggle{display:none}
+
+/* PAGES */
+.dash-page{display:none;animation:pageIn .35s cubic-bezier(.16,1,.3,1)}
+.dash-page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px;transition:.2s;position:relative;overflow:hidden;cursor:default}
+.stat-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--purple));transform:scaleX(0);transform-origin:left;transition:.4s ease}
+.stat-card:hover{border-color:var(--border2)}.stat-card:hover::before{transform:scaleX(1)}
+.stat-card .s-label{font-size:11px;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.stat-card .s-value{font-family:'Syne',sans-serif;font-size:26px;font-weight:800}
+.stat-card .s-change{font-size:11px;margin-top:5px;display:flex;align-items:center;gap:4px}
+.s-change.up{color:var(--green)}.s-change.down{color:var(--red)}.s-change.neutral{color:var(--text3)}
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;margin-right:4px}
+
+/* BOT CARDS */
+.bot-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.2s;animation:pageIn .4s cubic-bezier(.16,1,.3,1) both}
+.bot-card:hover{border-color:var(--border2);transform:translateX(4px)}
+.bot-ava{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;transition:.3s}
+.bot-card:hover .bot-ava{transform:scale(1.08) rotate(4deg)}
+.bot-info{flex:1;min-width:0}
+.bot-info .bname{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bot-info .bnum{font-size:11px;color:var(--text3)}
+.plan-tag{font-size:10px;background:rgba(0,212,255,.1);color:var(--accent);border-radius:100px;padding:2px 8px;display:inline-block;margin-top:2px;font-weight:700}
+.plan-tag.basic{background:rgba(124,77,255,.12);color:var(--purple)}
+.plan-tag.pro{background:rgba(255,214,0,.12);color:var(--yellow)}
+.status-pill{display:flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:100px;font-weight:600}
+.status-pill.online{background:rgba(0,230,118,.1);color:var(--green)}
+.status-pill.offline{background:rgba(255,71,87,.1);color:var(--red)}
+.status-pill.pending{background:rgba(255,214,0,.1);color:var(--yellow)}
+.status-dot{width:7px;height:7px;border-radius:50%}
+.status-dot.online{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+.status-dot.offline{background:var(--red)}.status-dot.pending{background:var(--yellow)}
+.bot-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* NOTIFICATIONS */
+.notif-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;gap:12px;transition:.2s;cursor:pointer}
+.notif-item.unread{border-color:rgba(0,212,255,.2);background:rgba(0,212,255,.025)}
+.notif-item:hover{border-color:var(--border2);transform:translateX(3px)}
+.notif-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.notif-content .ntitle{font-size:13px;font-weight:700;margin-bottom:3px}
+.notif-content .nmsg{font-size:12px;color:var(--text2);line-height:1.5}
+.notif-content .ntime{font-size:10px;color:var(--text3);margin-top:5px}
+
+/* PROFILE */
+.profile-header{display:flex;align-items:center;gap:18px;margin-bottom:22px}
+.profile-avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#000;position:relative}
+.profile-avatar::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(0,212,255,.3);animation:pulse 3s infinite}
+.plan-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2);color:var(--accent);font-size:11px;padding:3px 10px;border-radius:100px;margin-top:5px;font-weight:700}
+
+/* WALLET */
+.wallet-hero{background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(124,77,255,.08));border:1px solid rgba(0,212,255,.2);border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden}
+.wallet-hero .big-num{font-family:'Syne',sans-serif;font-size:54px;font-weight:800;color:var(--yellow);transition:.3s}
+.wallet-hero p{color:var(--text2);font-size:13px;margin-top:4px}
+.coin-pack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:22px}
+.coin-pack{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:20px 16px;text-align:center;cursor:pointer;transition:.3s cubic-bezier(.34,1.56,.64,1)}
+.coin-pack:hover{transform:translateY(-5px) scale(1.02);border-color:var(--accent);box-shadow:0 16px 36px rgba(0,0,0,.4)}
+.coin-pack .pack-icon{font-size:28px;margin-bottom:8px;display:block}
+.coin-pack .pack-coins{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--yellow)}
+.coin-pack .pack-price{font-size:16px;font-weight:700;margin:3px 0}
+.coin-pack .pack-badge{font-size:9px;background:rgba(0,230,118,.12);color:var(--green);border-radius:100px;padding:2px 7px;font-weight:700}
+.tx-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.tx-item:last-child{border:none}
+.tx-plus{color:var(--green)}.tx-minus{color:var(--red)}
+
+/* DISCOVER BOTS */
+.discover-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.discover-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;transition:.3s;cursor:default}
+.discover-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 14px 32px rgba(0,0,0,.3)}
+.discover-icon{width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+.discover-card h3{font-size:15px;margin-bottom:6px}
+.discover-card p{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px}
+.discover-meta{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text3)}
+.discover-rating{display:flex;align-items:center;gap:3px;color:var(--yellow)}
+.tag-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.tag{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:10px;color:var(--text2)}
+
+/* DOCS */
+.docs-layout{display:grid;grid-template-columns:200px 1fr;gap:20px}
+.docs-nav{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px;height:fit-content;position:sticky;top:20px}
+.docs-nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:var(--text2);cursor:pointer;transition:.2s;font-size:12px;font-weight:500}
+.docs-nav-item:hover,.docs-nav-item.active{background:rgba(0,212,255,.1);color:var(--accent)}
+.docs-content{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:26px}
+.docs-content h2{font-size:22px;margin-bottom:10px}
+.docs-content h3{font-size:14px;margin:20px 0 8px;color:var(--accent);display:flex;align-items:center;gap:7px}
+.docs-content p{font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:12px}
+.code-block{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:14px;font-family:monospace;font-size:12px;color:var(--green);overflow-x:auto;margin:10px 0;position:relative}
+.code-block .copy-btn{position:absolute;top:8px;right:8px;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s}
+.code-block .copy-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+/* SUPPORT */
+.support-channels{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:24px}
+.support-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:22px;text-align:center;transition:.3s;cursor:pointer}
+.support-card:hover{border-color:var(--accent);transform:translateY(-4px) rotate(-1deg);box-shadow:0 16px 36px rgba(0,0,0,.35)}
+.support-card i{font-size:26px;color:var(--accent);margin-bottom:10px;display:block;transition:.3s}
+.support-card:hover i{transform:scale(1.15) rotate(-5deg)}
+.support-card h3{font-size:14px;margin-bottom:5px}
+.support-card p{font-size:12px;color:var(--text2)}
+.ticket-form{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:22px;max-width:580px}
+
+/* STATS PAGE */
+.chart-container{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:22px}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.chart-legend{display:flex;gap:16px;font-size:12px;color:var(--text2)}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+.chart-tabs{display:flex;gap:6px}
+.chart-tab{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;transition:.2s;color:var(--text2);font-family:'DM Sans',sans-serif}
+.chart-tab.active,.chart-tab:hover{background:rgba(0,212,255,.1);border-color:var(--accent);color:var(--accent)}
+
+/* ADMIN */
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.admin-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.admin-stat .aval{font-family:'Syne',sans-serif;font-size:24px;font-weight:800}
+.admin-stat .albl{font-size:11px;color:var(--text2);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;color:var(--text3);padding:9px 13px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+td{padding:11px 13px;font-size:12px;border-bottom:1px solid var(--border)}
+tr:hover td{background:rgba(255,255,255,.015)}
+tr:last-child td{border:none}
+
+/* OVERVIEW ACTIVITY */
+.activity-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.activity-item:last-child{border:none}
+.activity-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+
+/* PHONE INPUT */
+.phone-wrap{display:flex}
+.flag-select{background:var(--bg);border:1px solid var(--border);border-radius:10px 0 0 10px;border-right:none;padding:11px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;flex-shrink:0}
+.phone-wrap input{border-radius:0 10px 10px 0!important}
+
+/* QUICK ACTIONS */
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.qa-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px;cursor:pointer;transition:.25s;display:flex;align-items:center;gap:13px}
+.qa-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.qa-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.qa-card h4{font-size:13px;margin-bottom:2px}
+.qa-card p{font-size:11px;color:var(--text2)}
+
+/* SECTION DIVIDER */
+.section-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);margin:20px 0}
+
+/* EMPTY STATE */
+.empty-state{background:var(--card);border:1px dashed var(--border2);border-radius:14px;padding:48px 24px;text-align:center;color:var(--text2)}
+.empty-state i{font-size:40px;color:var(--text3);display:block;margin-bottom:14px}
+.empty-state p{font-size:14px;margin-bottom:18px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:12px 18px}
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .hero{padding:110px 18px 60px}
+  .section{padding:60px 18px}
+  .features-grid{grid-template-columns:1fr 1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .sidebar{transform:translateX(-256px)}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.5)}
+  .dash-main{margin-left:0;max-width:100vw}
+  .menu-toggle{display:flex!important}
+  .docs-layout{grid-template-columns:1fr}
+  .dash-layout{grid-template-columns:1fr}
+  .quick-actions{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .features-grid{grid-template-columns:1fr}
+  .hero h1{font-size:34px}
+  .footer-grid{grid-template-columns:1fr}
+  .hero-stats{gap:20px}
+  .steps{flex-direction:column}
+  .step:not(:last-child)::after{display:none}
+  .nav-actions .btn:first-child{display:none}
+  .pricing-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- ═══════════════ LANDING ═══════════════ -->
+<div id="landing">
+  <nav id="navbar">
+    <div class="nav-logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+      <div class="logo-icon"><i class="fa-brands fa-whatsapp" style="color:#000"></i></div>
+      NexHost
+    </div>
+    <div class="nav-links">
+      <a onclick="scrollTo('features')">Features</a>
+      <a onclick="scrollTo('pricing')">Pricing</a>
+      <a onclick="scrollTo('coins')">Coins</a>
+      <a onclick="scrollTo('how')">How It Works</a>
+      <a onclick="scrollTo('docs-section')">Docs</a>
+      <a onclick="scrollTo('footer')">Support</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-outline btn-sm" onclick="showModal('login')"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+      <button class="btn btn-primary btn-sm" onclick="showModal('signup')"><i class="fa-solid fa-rocket"></i> Get Started</button>
+      <div class="hamburger" onclick="toggleMobile()"><span></span><span></span><span></span></div>
+    </div>
+  </nav>
+  <div class="mobile-nav" id="mobileNav">
+    <a onclick="scrollTo('features');toggleMobile()"><i class="fa-solid fa-star"></i> Features</a>
+    <a onclick="scrollTo('pricing');toggleMobile()"><i class="fa-solid fa-tag"></i> Pricing</a>
+    <a onclick="scrollTo('coins');toggleMobile()"><i class="fa-solid fa-coins"></i> Coins</a>
+    <a onclick="scrollTo('how');toggleMobile()"><i class="fa-solid fa-list-check"></i> How It Works</a>
+    <a onclick="showModal('login')"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+    <a onclick="showModal('signup')" style="color:var(--accent)"><i class="fa-solid fa-rocket"></i> Get Started Free</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="grid-bg"></div>
+    <div class="orb" style="width:500px;height:500px;background:radial-gradient(circle,rgba(0,212,255,.1),transparent 70%);top:-120px;left:-80px;animation-duration:16s"></div>
+    <div class="orb" style="width:380px;height:380px;background:radial-gradient(circle,rgba(124,77,255,.09),transparent 70%);bottom:-60px;right:-60px;animation-duration:19s;animation-delay:-6s"></div>
+    <div class="orb" style="width:260px;height:260px;background:radial-gradient(circle,rgba(0,230,118,.06),transparent 70%);top:40%;left:38%;animation-duration:22s;animation-delay:-10s"></div>
+    <div class="scan-line"></div>
+    <div class="hero-badge" style="position:relative;z-index:1"><i class="fa-solid fa-bolt"></i> The #1 WhatsApp Bot Hosting Platform</div>
+    <h1 id="heroH1" style="position:relative;z-index:1">
+      <span class="hero-word" style="animation-delay:.28s">Host </span>
+      <span class="hero-word" style="animation-delay:.38s">Your </span>
+      <span class="hero-word grad-text" style="animation-delay:.48s">WhatsApp </span>
+      <span class="hero-word grad-text" style="animation-delay:.58s">Bots</span><br>
+      <span class="hero-word" style="animation-delay:.68s">With </span>
+      <span class="hero-word" style="animation-delay:.78s">Zero </span>
+      <span class="hero-word" style="animation-delay:.88s">Hassle</span>
+    </h1>
+    <p style="position:relative;z-index:1">Deploy, manage, and scale your WhatsApp bots on NexHost. Pay with coins, get real-time stats, and keep your bots running 24/7.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="showModal('signup')" style="padding:13px 24px;font-size:14px"><i class="fa-solid fa-rocket"></i> Start Free — 10 Coins</button>
+      <button class="btn btn-outline" onclick="scrollTo('how')" style="padding:13px 24px;font-size:14px"><i class="fa-solid fa-play"></i> How It Works</button>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num" id="c1">0</div><div class="lbl">Active Bots</div></div>
+      <div class="hero-stat"><div class="num" id="c2">0</div><div class="lbl">Happy Users</div></div>
+      <div class="hero-stat"><div class="num" id="c3">99.9%</div><div class="lbl">Uptime</div></div>
+      <div class="hero-stat"><div class="num" id="c4">0</div><div class="lbl">Messages/Day</div></div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="section-header reveal">
+      <div class="chip">✦ Features</div>
+      <h2>Everything You Need to Run WhatsApp Bots</h2>
+      <p>From real-time monitoring to seamless deployment — NexHost has it all.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal d1"><div class="feature-icon" style="background:rgba(0,212,255,.1);color:var(--accent)"><i class="fa-brands fa-whatsapp"></i></div><h3>Multi-Bot Support</h3><p>Run multiple WhatsApp bots from a single dashboard with any country code worldwide.</p></div>
+      <div class="feature-card reveal d2"><div class="feature-icon" style="background:rgba(0,230,118,.1);color:var(--green)"><i class="fa-solid fa-chart-line"></i></div><h3>Real-Time Analytics</h3><p>Monitor message counts, uptime, response rates, and server load — all live.</p></div>
+      <div class="feature-card reveal d3"><div class="feature-icon" style="background:rgba(124,77,255,.1);color:var(--purple)"><i class="fa-solid fa-coins"></i></div><h3>Coin Economy</h3><p>Use coins to host bots. Get 10 free coins to start. Buy more anytime for just $1.</p></div>
+      <div class="feature-card reveal d4"><div class="feature-icon" style="background:rgba(255,214,0,.1);color:var(--yellow)"><i class="fa-solid fa-shield-halved"></i></div><h3>Always Online, 24/7</h3><p>High-availability infrastructure with automatic restarts. Your bots never sleep.</p></div>
+      <div class="feature-card reveal d5"><div class="feature-icon" style="background:rgba(255,71,87,.1);color:var(--red)"><i class="fa-solid fa-bell"></i></div><h3>Smart Notifications</h3><p>Alerts when bots go offline, coins run low, or anything needs your attention.</p></div>
+      <div class="feature-card reveal d6"><div class="feature-icon" style="background:rgba(255,140,66,.1);color:var(--orange)"><i class="fa-solid fa-puzzle-piece"></i></div><h3>Discover Bot Templates</h3><p>Browse and install pre-built bot templates — customer service, sales, info bots & more.</p></div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="background:var(--bg2);position:relative;overflow:hidden">
+    <div class="orb" style="width:300px;height:300px;background:radial-gradient(circle,rgba(124,77,255,.07),transparent 70%);top:-80px;right:-40px;animation-duration:18s"></div>
+    <div class="section-header reveal">
+      <div class="chip">✦ Pricing</div>
+      <h2>Simple, Coin-Based Pricing</h2>
+      <p>Choose a plan for each bot. Pay with coins from your wallet balance.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="plan-card reveal-left d1">
+        <div class="plan-name">🆓 Starter</div>
+        <div class="plan-price">0 <span>coins/day</span></div>
+        <div class="plan-desc">Perfect to get started with your first bot.</div>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i>1 WhatsApp Bot</li>
+          <li><i class="fa-solid fa-check"></i>500 Messages / Day</li>
+          <li><i class="fa-solid fa-check"></i>Basic Analytics</li>
+          <li><i class="fa-solid fa-check"></i>10 Free Starter Coins</li>
+          <li><i class="fa-solid fa-xmark"></i>Priority Support</li>
+          <li><i class="fa-solid fa-xmark"></i>Custom Commands</li>
+        </ul>
+        <button class="btn btn-outline btn-block" onclick="showModal('signup')">Get Started Free</button>
+      </div>
+      <div class="plan-card popular reveal d2">
+        <div class="plan-name">⚡ Basic</div>
+        <div class="plan-price">2 <span>coins/day</span></div>
+        <div class="plan-desc">For active bots needing more power and reach.</div>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i>Up to 3 Bots</li>
+          <li><i class="fa-solid fa-check"></i>5,000 Messages / Day</li>
+          <li><i class="fa-solid fa-check"></i>Full Analytics</li>
+          <li><i class="fa-solid fa-check"></i>Priority Support</li>
+          <li><i class="fa-solid fa-check"></i>Custom Commands</li>
+          <li><i class="fa-solid fa-xmark"></i>Dedicated Resources</li>
+        </ul>
+        <button class="btn btn-primary btn-block" onclick="showModal('signup')">Choose Basic</button>
+      </div>
+      <div class="plan-card reveal-right d3">
+        <div class="plan-name">🚀 Pro</div>
+        <div class="plan-price">5 <span>coins/day</span></div>
+        <div class="plan-desc">Maximum performance for power users.</div>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i>Unlimited Bots</li>
+          <li><i class="fa-solid fa-check"></i>Unlimited Messages</li>
+          <li><i class="fa-solid fa-check"></i>Advanced Analytics</li>
+          <li><i class="fa-solid fa-check"></i>24/7 Priority Support</li>
+          <li><i class="fa-solid fa-check"></i>Custom Commands</li>
+          <li><i class="fa-solid fa-check"></i>Dedicated Resources</li>
+        </ul>
+        <button class="btn btn-outline btn-block" onclick="showModal('signup')">Choose Pro</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- COINS -->
+  <section class="section" id="coins" style="position:relative;overflow:hidden">
+    <div class="orb" style="width:340px;height:340px;background:radial-gradient(circle,rgba(255,214,0,.05),transparent 70%);bottom:-80px;left:8%;animation-duration:15s"></div>
+    <div class="section-header reveal"><div class="chip">✦ Coin Packs</div><h2>Buy Coins, Host More Bots</h2><p>New accounts receive 10 free coins. Need more? Grab a pack instantly.</p></div>
+    <div class="coins-grid">
+      <div class="coin-card reveal d1"><span class="coin-icon">🎁</span><div class="coin-amount">10</div><div class="coin-price">Free</div><div class="coin-badge">New User Bonus</div></div>
+      <div class="coin-card reveal d2"><span class="coin-icon">🪙</span><div class="coin-amount">40</div><div class="coin-price">$1.00</div><div style="font-size:11px;color:var(--text3);margin-top:3px">$0.025 per coin</div></div>
+      <div class="coin-card featured reveal d3"><span class="coin-icon">💎</span><div class="coin-amount">100</div><div class="coin-price">$2.00</div><div class="coin-badge">Best Value — 25% off</div></div>
+      <div class="coin-card reveal d4"><span class="coin-icon">👑</span><div class="coin-amount">300</div><div class="coin-price">$5.00</div><div class="coin-badge">Mega Pack — 37% off</div></div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" style="background:var(--bg2)">
+    <div class="section-header reveal"><div class="chip">✦ How It Works</div><h2>Up and Running in Minutes</h2></div>
+    <div class="steps">
+      <div class="step reveal d1"><div class="step-num">1</div><h3>Create Account</h3><p>Sign up free and get 10 starter coins credited automatically.</p></div>
+      <div class="step reveal d2"><div class="step-num">2</div><h3>Add Your Bot</h3><p>Enter your WhatsApp number with country code (e.g. +2348056473526).</p></div>
+      <div class="step reveal d3"><div class="step-num">3</div><h3>Choose a Plan</h3><p>Pick Starter (free), Basic or Pro — coins deducted daily.</p></div>
+      <div class="step reveal d4"><div class="step-num">4</div><h3>Go Live!</h3><p>Your bot is hosted 24/7. Monitor it live from your dashboard.</p></div>
+    </div>
+  </section>
+
+  <!-- DOCS -->
+  <section class="section" id="docs-section">
+    <div class="section-header reveal"><div class="chip">✦ Docs</div><h2>Quick Start Guide</h2><p>Everything you need to get your first WhatsApp bot running.</p></div>
+    <div style="max-width:760px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px" class="reveal">
+      <h3 style="font-size:16px;margin-bottom:14px;color:var(--accent)"><i class="fa-solid fa-terminal"></i> Number Format</h3>
+      <p style="color:var(--text2);font-size:13px;line-height:1.8;margin-bottom:10px">Enter your WhatsApp number with the full country code, no + sign:</p>
+      <div class="code-block">✅  2348056473526  (Nigeria +234)<br>✅  447911123456   (UK +44)<br>✅  12125551234    (USA +1)<br>❌  08056473526    (missing country code)<br>❌  +2348056473526  (remove the +)</div>
+      <h3 style="font-size:16px;margin:20px 0 12px;color:var(--accent)"><i class="fa-solid fa-coins"></i> Daily Coin Cost</h3>
+      <div class="code-block">Starter Plan → 0 coins/day (free forever)<br>Basic Plan   → 2 coins/day per bot<br>Pro Plan     → 5 coins/day per bot</div>
+      <div style="margin-top:20px;text-align:center"><button class="btn btn-primary" onclick="showModal('signup')"><i class="fa-solid fa-rocket"></i> Start Hosting Now — Free</button></div>
+    </div>
+  </section>
+
+  <footer id="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo"><div class="logo-icon"><i class="fa-brands fa-whatsapp" style="color:#000"></i></div>NexHost</div>
+        <p>The #1 platform for hosting and managing WhatsApp bots. Simple, reliable, coin-powered.</p>
+        <div class="socials" style="margin-top:16px">
+          <a title="Twitter"><i class="fa-brands fa-twitter"></i></a>
+          <a title="Discord"><i class="fa-brands fa-discord"></i></a>
+          <a title="GitHub"><i class="fa-brands fa-github"></i></a>
+          <a title="Telegram"><i class="fa-brands fa-telegram"></i></a>
+        </div>
+      </div>
+      <div class="footer-col"><h4>Product</h4><a onclick="scrollTo('features')">Features</a><a onclick="scrollTo('pricing')">Pricing</a><a onclick="scrollTo('coins')">Coins</a><a onclick="scrollTo('docs-section')">Documentation</a></div>
+      <div class="footer-col"><h4>Company</h4><a>About Us</a><a>Blog</a><a>Careers</a><a>Press Kit</a></div>
+      <div class="footer-col"><h4>Support</h4><a>Help Center</a><a>Discord Server</a><a>Contact Us</a><a>Status Page</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 NexHost. All rights reserved.</p>
+      <p>Privacy Policy · Terms of Service</p>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div id="dashboard">
+  <div class="dash-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon"><i class="fa-brands fa-whatsapp" style="color:#000"></i></div>
+        <span>NexHost</span>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">Main</div>
+        <div class="nav-item active" onclick="nav('overview')"><i class="fa-solid fa-house"></i> Overview</div>
+        <div class="nav-item" onclick="nav('bots')"><i class="fa-brands fa-whatsapp"></i> My Bots <span class="nav-badge" id="botBadge">0</span></div>
+        <div class="nav-item" onclick="nav('add-bot')"><i class="fa-solid fa-circle-plus"></i> Add Bot</div>
+        <div class="nav-item" onclick="nav('stats')"><i class="fa-solid fa-chart-area"></i> Statistics</div>
+        <div class="nav-item" onclick="nav('discover')"><i class="fa-solid fa-compass"></i> Discover Bots</div>
+        <div class="nav-section">Account</div>
+        <div class="nav-item" onclick="nav('wallet')"><i class="fa-solid fa-wallet"></i> Wallet <span class="nav-badge green" id="coinBadge">10</span></div>
+        <div class="nav-item" onclick="nav('notifications')"><i class="fa-solid fa-bell"></i> Notifications <span class="nav-badge" id="notifBadge">3</span></div>
+        <div class="nav-item" onclick="nav('profile')"><i class="fa-solid fa-user-circle"></i> Profile</div>
+        <div class="nav-section">Resources</div>
+        <div class="nav-item" onclick="nav('docs')"><i class="fa-solid fa-book-open"></i> Documentation</div>
+        <div class="nav-item" onclick="nav('support')"><i class="fa-solid fa-headset"></i> Support</div>
+        <div id="adminNav" style="display:none">
+          <div class="nav-section">Admin</div>
+          <div class="nav-item" onclick="nav('admin')" style="color:var(--yellow)"><i class="fa-solid fa-crown"></i> Admin Panel</div>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="avatar" id="sbAvatar">U</div>
+          <div class="user-info">
+            <div class="name" id="sbName">User</div>
+            <div class="role" id="sbRole">Starter Plan</div>
+          </div>
+          <i class="fa-solid fa-right-from-bracket" style="margin-left:auto;color:var(--text3);cursor:pointer;font-size:13px" onclick="logout()" title="Logout"></i>
+        </div>
+      </div>
+    </aside>
+
+    <main class="dash-main">
+      <div class="dash-header">
+        <div class="dash-title">
+          <h2 id="pageTitle">Overview</h2>
+          <p id="pageSub">Welcome back!</p>
+        </div>
+        <div class="dash-header-actions">
+          <button class="btn btn-ghost btn-sm menu-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+          <div class="icon-btn" onclick="nav('notifications')" title="Notifications">
+            <i class="fa-solid fa-bell" style="font-size:15px"></i>
+            <div class="notif-dot" id="notifDot"></div>
+          </div>
+          <div class="icon-btn" onclick="nav('wallet')" title="Wallet" style="gap:5px;padding:0 12px;width:auto">
+            <i class="fa-solid fa-coins" style="color:var(--yellow);font-size:14px"></i>
+            <span id="headerCoins" style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px">10</span>
+          </div>
+          <div class="user-pill" style="cursor:pointer;padding:6px 10px" onclick="nav('profile')">
+            <div class="avatar" id="headerAvatar" style="width:30px;height:30px;font-size:12px">U</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── OVERVIEW ── -->
+      <div class="dash-page active" id="page-overview">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="s-label"><i class="fa-brands fa-whatsapp" style="color:var(--green)"></i> Active Bots</div><div class="s-value" id="ovBots">0</div><div class="s-change neutral"><i class="fa-solid fa-circle-dot"></i> Total registered</div></div>
+          <div class="stat-card"><div class="s-label"><i class="fa-solid fa-coins" style="color:var(--yellow)"></i> Coin Balance</div><div class="s-value" id="ovCoins">10</div><div class="s-change up"><i class="fa-solid fa-gift"></i> Starter bonus</div></div>
+          <div class="stat-card"><div class="s-label"><span class="live-dot"></span> Messages Today</div><div class="s-value" id="ovMsgs">0</div><div class="s-change up"><i class="fa-solid fa-arrow-trend-up"></i> Live</div></div>
+          <div class="stat-card"><div class="s-label"><i class="fa-solid fa-signal" style="color:var(--purple)"></i> Uptime</div><div class="s-value">99.9%</div><div class="s-change up"><i class="fa-solid fa-circle-check"></i> All systems OK</div></div>
+        </div>
+        <div class="quick-actions">
+          <div class="qa-card" onclick="nav('add-bot')"><div class="qa-icon" style="background:rgba(0,212,255,.1);color:var(--accent)"><i class="fa-solid fa-circle-plus"></i></div><div><h4>Add New Bot</h4><p>Register a WhatsApp number</p></div></div>
+          <div class="qa-card" onclick="nav('wallet')"><div class="qa-icon" style="background:rgba(255,214,0,.1);color:var(--yellow)"><i class="fa-solid fa-coins"></i></div><div><h4>Buy Coins</h4><p>Top up your wallet</p></div></div>
+          <div class="qa-card" onclick="nav('discover')"><div class="qa-icon" style="background:rgba(124,77,255,.1);color:var(--purple)"><i class="fa-solid fa-compass"></i></div><div><h4>Discover Bots</h4><p>Browse bot templates</p></div></div>
+          <div class="qa-card" onclick="nav('docs')"><div class="qa-icon" style="background:rgba(0,230,118,.1);color:var(--green)"><i class="fa-solid fa-book-open"></i></div><div><h4>Documentation</h4><p>Learn how to use NexHost</p></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px">
+            <h3 style="font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent)"></i> Recent Activity</h3>
+            <div id="activityList"><div style="font-size:13px;color:var(--text3);text-align:center;padding:16px 0"><i class="fa-solid fa-inbox" style="display:block;font-size:24px;margin-bottom:8px;opacity:.4"></i>No activity yet</div></div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px">
+            <h3 style="font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-server" style="color:var(--green)"></i> System Status</h3>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">API Server</span><span style="color:var(--green)"><i class="fa-solid fa-circle" style="font-size:8px"></i> Operational</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Bot Engine</span><span style="color:var(--green)"><i class="fa-solid fa-circle" style="font-size:8px"></i> Operational</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Message Queue</span><span style="color:var(--green)"><i class="fa-solid fa-circle" style="font-size:8px"></i> Operational</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Coin Ledger</span><span style="color:var(--green)"><i class="fa-solid fa-circle" style="font-size:8px"></i> Operational</span></div>
+              <div style="background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:4px;font-size:11px;color:var(--text3)"><i class="fa-solid fa-check-circle" style="color:var(--green)"></i> All systems operational — Last checked <span id="lastCheck">now</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MY BOTS ── -->
+      <div class="dash-page" id="page-bots">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+          <p style="font-size:13px;color:var(--text2)" id="botsLabel">0 bots registered</p>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="nav('discover')"><i class="fa-solid fa-compass"></i> Discover Templates</button>
+            <button class="btn btn-primary btn-sm" onclick="nav('add-bot')"><i class="fa-solid fa-plus"></i> Add Bot</button>
+          </div>
+        </div>
+        <div id="botsList">
+          <div class="empty-state"><i class="fa-brands fa-whatsapp"></i><p>No bots yet. Add your first WhatsApp bot to get started!</p><button class="btn btn-primary btn-sm" onclick="nav('add-bot')"><i class="fa-solid fa-plus"></i> Add First Bot</button></div>
+        </div>
+      </div>
+
+      <!-- ── ADD BOT ── -->
+      <div class="dash-page" id="page-add-bot">
+        <div style="max-width:560px">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px">
+            <h3 style="font-size:16px;margin-bottom:5px"><i class="fa-brands fa-whatsapp" style="color:var(--green)"></i> Add New WhatsApp Bot</h3>
+            <p style="font-size:12px;color:var(--text2);margin-bottom:20px">Register a WhatsApp number to host as a bot on NexHost.</p>
+            <div class="form-group"><label>Bot Nickname (optional)</label><input type="text" id="botNick" placeholder="e.g. My Shop Bot"></div>
+            <div class="form-group">
+              <label>WhatsApp Number with Country Code</label>
+              <div class="phone-wrap">
+                <select class="flag-select" id="countryCode">
+                  <option value="234">🇳🇬 +234</option><option value="1">🇺🇸 +1</option><option value="44">🇬🇧 +44</option>
+                  <option value="27">🇿🇦 +27</option><option value="233">🇬🇭 +233</option><option value="254">🇰🇪 +254</option>
+                  <option value="255">🇹🇿 +255</option><option value="256">🇺🇬 +256</option><option value="91">🇮🇳 +91</option>
+                  <option value="49">🇩🇪 +49</option><option value="33">🇫🇷 +33</option><option value="86">🇨🇳 +86</option>
+                  <option value="55">🇧🇷 +55</option><option value="7">🇷🇺 +7</option><option value="966">🇸🇦 +966</option>
+                  <option value="971">🇦🇪 +971</option><option value="20">🇪🇬 +20</option><option value="212">🇲🇦 +212</option>
+                </select>
+                <input type="text" id="botNumber" placeholder="8056473526" style="border-radius:0 10px 10px 0">
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:5px"><i class="fa-solid fa-circle-info"></i> Full example: 2348056473526 (no + sign)</div>
+            </div>
+            <div class="form-group">
+              <label>Bot Plan</label>
+              <select id="botPlan">
+                <option value="starter">🆓 Starter — Free (0 coins/day)</option>
+                <option value="basic">⚡ Basic — 2 coins/day</option>
+                <option value="pro">🚀 Pro — 5 coins/day</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Bot Description (optional)</label>
+              <input type="text" id="botDesc" placeholder="What does this bot do?">
+            </div>
+            <button class="btn btn-primary btn-block" onclick="addBot()" style="margin-top:4px"><i class="fa-solid fa-circle-plus"></i> Register Bot</button>
+          </div>
+          <div style="background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.15);border-radius:12px;padding:14px;font-size:12px;color:var(--text2);line-height:1.7">
+            <i class="fa-solid fa-lightbulb" style="color:var(--accent)"></i> <strong style="color:var(--text)">Tip:</strong> Starter plan is completely free and perfect for testing. Upgrade to Basic or Pro anytime from your bot settings.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STATISTICS ── -->
+      <div class="dash-page" id="page-stats">
+        <div class="stats-grid" style="margin-bottom:18px">
+          <div class="stat-card"><div class="s-label"><span class="live-dot"></span> Live Messages</div><div class="s-value" id="stMsgs">0</div></div>
+          <div class="stat-card"><div class="s-label"><i class="fa-solid fa-gauge" style="color:var(--accent)"></i> Response Time</div><div class="s-value">~120ms</div></div>
+          <div class="stat-card"><div class="s-label"><i class="fa-solid fa-microchip" style="color:var(--purple)"></i> Server Load</div><div class="s-value" id="stLoad">24%</div></div>
+          <div class="stat-card"><div class="s-label"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Uptime</div><div class="s-value">99.9%</div></div>
+        </div>
+        <div class="chart-container" style="margin-bottom:16px">
+          <div class="chart-header">
+            <div>
+              <h3 style="font-size:14px;margin-bottom:4px"><i class="fa-solid fa-chart-area" style="color:var(--accent)"></i> Message Activity</h3>
+              <p style="font-size:11px;color:var(--text3)">Real-time data · Updates every 2s</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="chart-legend">
+                <span><span class="legend-dot" style="background:var(--green)"></span>Sent</span>
+                <span><span class="legend-dot" style="background:var(--accent)"></span>Received</span>
+              </div>
+              <div class="chart-tabs">
+                <div class="chart-tab active" onclick="setChartPeriod('1h',this)">1H</div>
+                <div class="chart-tab" onclick="setChartPeriod('6h',this)">6H</div>
+                <div class="chart-tab" onclick="setChartPeriod('24h',this)">24H</div>
+              </div>
+            </div>
+          </div>
+          <canvas id="mainChart" style="width:100%;height:180px"></canvas>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px">
+            <h3 style="font-size:13px;margin-bottom:14px;color:var(--text2)"><i class="fa-solid fa-robot"></i> Bot Performance</h3>
+            <div id="botPerf" style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text3)">No bots to show.</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px">
+            <h3 style="font-size:13px;margin-bottom:14px;color:var(--text2)"><i class="fa-solid fa-coins"></i> Coin Spending</h3>
+            <canvas id="coinChart" style="width:100%;height:120px"></canvas>
+            <p style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Daily coin usage (last 7 days)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DISCOVER ── -->
+      <div class="dash-page" id="page-discover">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <input type="text" id="discoverSearch" placeholder="🔍  Search bot templates..." style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:inherit;font-size:13px;outline:none;flex:1;min-width:200px" oninput="filterDiscover(this.value)">
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="discoverFilters">
+            <button class="chart-tab active" onclick="filterDiscoverTag('all',this)">All</button>
+            <button class="chart-tab" onclick="filterDiscoverTag('ecommerce',this)">E-Commerce</button>
+            <button class="chart-tab" onclick="filterDiscoverTag('customer',this)">Customer Service</button>
+            <button class="chart-tab" onclick="filterDiscoverTag('info',this)">Info</button>
+            <button class="chart-tab" onclick="filterDiscoverTag('sales',this)">Sales</button>
+          </div>
+        </div>
+        <div class="discover-grid" id="discoverGrid"></div>
+      </div>
+
+      <!-- ── WALLET ── -->
+      <div class="dash-page" id="page-wallet">
+        <div class="wallet-hero">
+          <div class="orb" style="width:200px;height:200px;background:radial-gradient(circle,rgba(255,214,0,.08),transparent 70%);top:-50px;right:-30px;filter:blur(50px)"></div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:4px"><i class="fa-solid fa-coins" style="color:var(--yellow)"></i> Your Coin Balance</div>
+          <div class="big-num" id="walletCoins">10</div>
+          <p>≈ <span id="walletUSD">$0.25</span> USD equivalent</p>
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:16px">
+            <button class="btn btn-ghost btn-sm" onclick="showBuyCoins()"><i class="fa-solid fa-plus"></i> Buy Coins</button>
+            <button class="btn btn-ghost btn-sm" onclick="nav('stats')"><i class="fa-solid fa-chart-bar"></i> View Usage</button>
+          </div>
+        </div>
+        <h3 style="font-size:14px;margin-bottom:14px;font-weight:700">Purchase Coin Packs</h3>
+        <div class="coin-pack-grid">
+          <div class="coin-pack" onclick="initBuy(40,1)"><span class="pack-icon">🪙</span><div class="pack-coins">40 Coins</div><div class="pack-price">$1.00</div></div>
+          <div class="coin-pack" style="border-color:var(--accent)" onclick="initBuy(100,2)"><span class="pack-icon">💎</span><div class="pack-coins">100 Coins</div><div class="pack-price">$2.00</div><div class="pack-badge">Best Value</div></div>
+          <div class="coin-pack" onclick="initBuy(300,5)"><span class="pack-icon">👑</span><div class="pack-coins">300 Coins</div><div class="pack-price">$5.00</div><div class="pack-badge">Mega Pack</div></div>
+          <div class="coin-pack" onclick="initBuy(1000,15)"><span class="pack-icon">🔥</span><div class="pack-coins">1000 Coins</div><div class="pack-price">$15.00</div><div class="pack-badge">Whale Pack</div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <h3 style="font-size:14px;font-weight:700"><i class="fa-solid fa-list" style="color:var(--accent)"></i> Transaction History</h3>
+            <span style="font-size:11px;color:var(--text3)" id="txCount">1 transaction</span>
+          </div>
+          <div id="txList">
+            <div class="tx-item"><span><i class="fa-solid fa-gift" style="color:var(--green)"></i> Welcome bonus — New account</span><span class="tx-plus">+10 🪙</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NOTIFICATIONS ── -->
+      <div class="dash-page" id="page-notifications">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <p style="font-size:13px;color:var(--text2)" id="notifCount">3 unread notifications</p>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="markAllRead()"><i class="fa-solid fa-check-double"></i> Mark All Read</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearNotifs()"><i class="fa-solid fa-trash"></i> Clear All</button>
+          </div>
+        </div>
+        <div id="notifList" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+      <!-- ── PROFILE ── -->
+      <div class="dash-page" id="page-profile">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px">
+            <div class="profile-header">
+              <div class="profile-avatar" id="profAvatar">U</div>
+              <div>
+                <h3 id="profName" style="font-size:18px">User</h3>
+                <p id="profEmail" style="font-size:12px;color:var(--text2);margin-top:2px">user@email.com</p>
+                <div class="plan-badge" id="profPlan"><i class="fa-solid fa-tag"></i> Starter Plan</div>
+              </div>
+            </div>
+            <div class="section-divider"></div>
+            <div class="form-group"><label>Display Name</label><input type="text" id="editName" placeholder="Your name"></div>
+            <div class="form-group"><label>Email</label><input type="text" id="editEmail" placeholder="Email" readonly style="opacity:.55;cursor:not-allowed"></div>
+            <div class="form-group"><label>Bio / Note</label><input type="text" id="editBio" placeholder="Something about you..."></div>
+            <button class="btn btn-primary btn-sm" onclick="saveProfile()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px">
+              <h3 style="font-size:14px;margin-bottom:16px"><i class="fa-solid fa-shield-halved" style="color:var(--accent)"></i> Security</h3>
+              <div class="form-group">
+                <label>New Password</label>
+                <div class="pw-wrap">
+                  <input type="password" id="newPw" placeholder="Create a new password" oninput="pwStrength(this,'sb2','sl2')">
+                  <button class="pw-toggle" onclick="togglePw('newPw',this)"><i class="fa-solid fa-eye"></i></button>
+                </div>
+                <div class="strength-bar"><span id="sb21"></span><span id="sb22"></span><span id="sb23"></span><span id="sb24"></span></div>
+                <div class="strength-label" id="sl2"></div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="changePw()"><i class="fa-solid fa-key"></i> Update Password</button>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px">
+              <h3 style="font-size:14px;margin-bottom:14px"><i class="fa-solid fa-chart-bar" style="color:var(--purple)"></i> Your Stats</h3>
+              <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Account Created</span><span id="profCreated">Today</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Total Bots</span><span id="profBots">0</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Coins Spent</span><span id="profSpent">0 🪙</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Current Plan</span><span id="profPlanText" style="color:var(--accent)">Starter</span></div>
+              </div>
+              <div class="section-divider"></div>
+              <button class="btn btn-danger btn-sm" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DOCS ── -->
+      <div class="dash-page" id="page-docs">
+        <div class="docs-layout">
+          <div class="docs-nav">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:0 10px 8px;font-weight:700">Contents</div>
+            <div class="docs-nav-item active" onclick="showDoc('start',this)"><i class="fa-solid fa-play"></i> Getting Started</div>
+            <div class="docs-nav-item" onclick="showDoc('bots',this)"><i class="fa-brands fa-whatsapp"></i> Adding Bots</div>
+            <div class="docs-nav-item" onclick="showDoc('coins',this)"><i class="fa-solid fa-coins"></i> Coins & Billing</div>
+            <div class="docs-nav-item" onclick="showDoc('plans',this)"><i class="fa-solid fa-tag"></i> Plans</div>
+            <div class="docs-nav-item" onclick="showDoc('api',this)"><i class="fa-solid fa-code"></i> API Reference</div>
+            <div class="docs-nav-item" onclick="showDoc('webhooks',this)"><i class="fa-solid fa-webhook"></i> Webhooks</div>
+            <div class="docs-nav-item" onclick="showDoc('faq',this)"><i class="fa-solid fa-circle-question"></i> FAQ</div>
+          </div>
+          <div class="docs-content" id="docContent"></div>
+        </div>
+      </div>
+
+      <!-- ── SUPPORT ── -->
+      <div class="dash-page" id="page-support">
+        <div class="support-channels">
+          <div class="support-card" onclick="toast('Joining Discord...','info')"><i class="fa-brands fa-discord"></i><h3>Discord Server</h3><p>Live community help and announcements</p></div>
+          <div class="support-card" onclick="toast('Opening WhatsApp support chat...','info')"><i class="fa-brands fa-whatsapp" style="color:var(--green)"></i><h3>WhatsApp Chat</h3><p>Direct support on WhatsApp</p></div>
+          <div class="support-card" onclick="toast('Copying email: support@nexhost.com','info');copyText('support@nexhost.com')"><i class="fa-solid fa-envelope"></i><h3>Email Support</h3><p>support@nexhost.com</p></div>
+          <div class="support-card" onclick="nav('docs')"><i class="fa-solid fa-book-open" style="color:var(--purple)"></i><h3>Documentation</h3><p>Browse full guides & references</p></div>
+        </div>
+        <div class="ticket-form">
+          <h3 style="font-size:15px;margin-bottom:4px"><i class="fa-solid fa-ticket" style="color:var(--accent)"></i> Submit a Support Ticket</h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:18px">We respond within 24 hours on weekdays.</p>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="ticketCat">
+              <option>Billing / Coins</option>
+              <option>Bot Not Working</option>
+              <option>Account Issue</option>
+              <option>Feature Request</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Subject</label><input type="text" id="ticketSubj" placeholder="Brief description of the issue"></div>
+          <div class="form-group"><label>Message</label><textarea id="ticketMsg" placeholder="Describe your issue in detail..." style="height:110px;resize:vertical"></textarea></div>
+          <div class="form-group"><label>Priority</label>
+            <select id="ticketPriority"><option>Normal</option><option>High</option><option>Urgent</option></select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="submitTicket()"><i class="fa-solid fa-paper-plane"></i> Submit Ticket</button>
+        </div>
+      </div>
+
+      <!-- ── ADMIN ── -->
+      <div class="dash-page" id="page-admin">
+        <div style="background:rgba(255,214,0,.05);border:1px solid rgba(255,214,0,.2);border-radius:13px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+          <i class="fa-solid fa-crown" style="color:var(--yellow);font-size:18px"></i>
+          <div><div style="font-family:Syne,sans-serif;font-weight:700;font-size:14px">Admin Panel</div><div style="font-size:12px;color:var(--text2)">Full system access — manage users, bots, coins, and plans.</div></div>
+          <span style="margin-left:auto;background:rgba(255,214,0,.1);color:var(--yellow);border:1px solid rgba(255,214,0,.2);border-radius:100px;padding:3px 10px;font-size:11px;font-weight:700">ADMIN</span>
+        </div>
+        <div class="admin-grid">
+          <div class="admin-stat"><div class="aval" id="admUsers">0</div><div class="albl">Total Users</div></div>
+          <div class="admin-stat"><div class="aval" id="admBots">0</div><div class="albl">Total Bots</div></div>
+          <div class="admin-stat"><div class="aval" id="admCoins">0</div><div class="albl">Coins in Circulation</div></div>
+          <div class="admin-stat"><div class="aval" style="color:var(--green)">$0</div><div class="albl">Total Revenue</div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <h3 style="font-size:14px;font-weight:700"><i class="fa-solid fa-users" style="color:var(--accent)"></i> Users</h3>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm" onclick="adminBroadcast()"><i class="fa-solid fa-bullhorn"></i> Broadcast</button>
+              <button class="btn btn-danger btn-sm" onclick="adminRestart()"><i class="fa-solid fa-rotate"></i> Restart All Bots</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Coins</th><th>Bots</th><th>Joined</th><th>Actions</th></tr></thead>
+              <tbody id="admTable"><tr><td colspan="7" style="color:var(--text3);text-align:center;padding:20px">No users yet</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px">
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:14px"><i class="fa-solid fa-sliders" style="color:var(--yellow)"></i> Quick Admin Actions</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="adminGiveCoins()"><i class="fa-solid fa-coins"></i> Give Coins</button>
+            <button class="btn btn-ghost btn-sm" onclick="adminUpgradePlan()"><i class="fa-solid fa-arrow-up"></i> Upgrade User Plan</button>
+            <button class="btn btn-ghost btn-sm" onclick="nav('stats')"><i class="fa-solid fa-chart-area"></i> View Stats</button>
+            <button class="btn btn-danger btn-sm" onclick="adminDeleteUser()"><i class="fa-solid fa-user-minus"></i> Remove User</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══════════ MODALS ══════════ -->
+<!-- LOGIN -->
+<div class="overlay hidden" id="modal-login">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal('login')"><i class="fa-solid fa-xmark"></i></div>
+    <h2>Welcome Back 👋</h2>
+    <p class="sub">Sign in to your NexHost account</p>
+    <div class="form-group"><label>Email or Phone Number</label><input type="text" id="loginEmail" placeholder="you@email.com or 2349049460676"></div>
+    <div class="form-group"><label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="loginPw" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="pw-toggle" onclick="togglePw('loginPw',this)"><i class="fa-solid fa-eye"></i></button>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()" style="margin-top:6px"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+    <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--text2)">No account? <span style="color:var(--accent);cursor:pointer;font-weight:600" onclick="closeModal('login');showModal('signup')">Sign up free →</span></div>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div class="overlay hidden" id="modal-signup">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal('signup')"><i class="fa-solid fa-xmark"></i></div>
+    <h2>Create Account 🚀</h2>
+    <p class="sub">Join NexHost and get 10 free coins instantly!</p>
+    <div class="form-group"><label>Full Name</label><input type="text" id="signupName" placeholder="Your full name"></div>
+    <div class="form-group"><label>Email Address</label><input type="email" id="signupEmail" placeholder="you@email.com"></div>
+    <div class="form-group"><label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="signupPw" placeholder="Create a strong password" oninput="pwStrength(this,'sb','sl')">
+        <button class="pw-toggle" onclick="togglePw('signupPw',this)"><i class="fa-solid fa-eye"></i></button>
+      </div>
+      <div class="strength-bar"><span id="sb1"></span><span id="sb2"></span><span id="sb3"></span><span id="sb4"></span></div>
+      <div class="strength-label" id="sl"></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="doSignup()" style="margin-top:6px"><i class="fa-solid fa-user-plus"></i> Create Account & Get 10 Coins</button>
+    <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--text2)">Already have an account? <span style="color:var(--accent);cursor:pointer;font-weight:600" onclick="closeModal('signup');showModal('login')">Login →</span></div>
+  </div>
+</div>
+
+<!-- BUY COINS -->
+<div class="overlay hidden" id="modal-buy">
+  <div class="modal" style="max-width:420px;text-align:center">
+    <div class="modal-close" onclick="closeModal('buy')"><i class="fa-solid fa-xmark"></i></div>
+    <h2>Purchase Coins 🪙</h2>
+    <p class="sub" id="buyDesc">Confirm your coin purchase</p>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:22px;margin:16px 0">
+      <div style="font-size:40px;margin-bottom:8px" id="buyEmoji">🪙</div>
+      <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--yellow)" id="buyCoinsNum">40</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px">Coins for <strong id="buyPriceDisplay" style="color:var(--text)">$1.00</strong></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px" id="buyValueNote">Your new balance: <span id="buyNewBalance">50</span> coins</div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="confirmBuy()" style="margin-bottom:10px"><i class="fa-solid fa-credit-card"></i> Complete Purchase (Demo)</button>
+    <p style="font-size:11px;color:var(--text3)"><i class="fa-solid fa-lock"></i> Secure checkout · Demo mode · No real charge</p>
+  </div>
+</div>
+
+<!-- BOT DETAIL -->
+<div class="overlay hidden" id="modal-bot">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-close" onclick="closeModal('bot')"><i class="fa-solid fa-xmark"></i></div>
+    <h2 id="botModalTitle">Bot Details</h2>
+    <p class="sub" id="botModalNum">+000000000</p>
+    <div id="botModalContent"></div>
+  </div>
+</div>
+
+<!-- DISCOVER INSTALL -->
+<div class="overlay hidden" id="modal-install">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-close" onclick="closeModal('install')"><i class="fa-solid fa-xmark"></i></div>
+    <h2 id="installTitle">Install Bot Template</h2>
+    <p class="sub" id="installDesc">Configure and install this bot template</p>
+    <div class="form-group"><label>Target Bot Number</label>
+      <select id="installBot"><option value="">— Select a registered bot —</option></select>
+    </div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12px;color:var(--text2);margin-bottom:16px" id="installInfo"></div>
+    <button class="btn btn-primary btn-block" onclick="confirmInstall()"><i class="fa-solid fa-download"></i> Install Template</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ─────────────────────── STATE ───────────────────────
+let users = JSON.parse(localStorage.getItem('nh_users')||'[]');
+let cu = JSON.parse(sessionStorage.getItem('nh_cu')||'null'); // current user
+let rtTimer = null, chartTimer = null;
+let buyPending = {};
+let installPending = {};
+const ADMIN_PHONE = '2349049460676';
+const ADMIN_PW = 'ibraheem123';
+
+// ─────────────────────── UTILS ───────────────────────
+function toast(msg, type='info', dur=3500) {
+  const icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info',warn:'fa-triangle-exclamation'};
+  const d=document.createElement('div');
+  d.className=`toast ${type}`;
+  d.innerHTML=`<i class="fa-solid ${icons[type]}"></i><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(d);
+  setTimeout(()=>{d.style.animation='slideOut .3s ease forwards';setTimeout(()=>d.remove(),300)},dur);
+}
+function $(id){return document.getElementById(id)}
+function cap(s){return s?s[0].toUpperCase()+s.slice(1):''}
+function copyText(t){navigator.clipboard?.writeText(t)||toast('Copy not supported','warn')}
+function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—'}
+function fmtTime(){return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}
+function saveUsers(){localStorage.setItem('nh_users',JSON.stringify(users))}
+function saveCU(){sessionStorage.setItem('nh_cu',JSON.stringify(cu));const i=users.findIndex(u=>u.id===cu.id);if(i!==-1){users[i]=cu;saveUsers()}}
+
+// ─────────────────────── AUTH ───────────────────────
+function doLogin(){
+  const em=$('loginEmail').value.trim();
+  const pw=$('loginPw').value;
+  if(!em||!pw)return toast('Please fill all fields','error');
+
+  // Admin
+  if((em===ADMIN_PHONE||em==='+'+ADMIN_PHONE||em===ADMIN_PHONE+'@nexhost.com')&&pw===ADMIN_PW){
+    let adm=users.find(u=>u.isAdmin);
+    if(!adm){
+      adm={id:'admin',name:'Ibrahim Admin',email:ADMIN_PHONE+'@nexhost.com',pw:ADMIN_PW,coins:999999,plan:'pro',bots:[],isAdmin:true,createdAt:new Date().toISOString(),bio:'Platform Administrator',coinsSpent:0,txHistory:[{label:'Admin account created',val:0,date:new Date().toISOString()}]};
+      users.push(adm);saveUsers();
+    }
+    cu=adm;saveCU();closeModal('login');enterDash();return;
+  }
+  const u=users.find(x=>x.email===em&&x.pw===pw);
+  if(!u)return toast('Invalid email or password','error');
+  cu=u;saveCU();closeModal('login');enterDash();
+}
+
+function doSignup(){
+  const name=$('signupName').value.trim();
+  const email=$('signupEmail').value.trim();
+  const pw=$('signupPw').value;
+  if(!name||!email||!pw)return toast('Please fill all fields','error');
+  if(pw.length<6)return toast('Password must be at least 6 characters','error');
+  if(!/\S+@\S+\.\S+/.test(email))return toast('Enter a valid email address','error');
+  if(users.find(u=>u.email===email))return toast('Email already registered','error');
+  const u={id:Date.now().toString(),name,email,pw,coins:10,plan:'starter',bots:[],isAdmin:false,createdAt:new Date().toISOString(),bio:'',coinsSpent:0,txHistory:[{label:'Welcome bonus — New account',val:10,type:'credit',date:new Date().toISOString()}]};
+  users.push(u);saveUsers();
+  cu=u;saveCU();
+  closeModal('signup');
+  enterDash();
+  toast('Account created! 10 coins credited 🎉','success');
+}
+
+function logout(){
+  clearInterval(rtTimer);clearInterval(chartTimer);
+  cu=null;sessionStorage.removeItem('nh_cu');
+  $('dashboard').style.display='none';
+  $('landing').style.display='block';
+  toast('Logged out','info');
+}
+
+// ─────────────────────── DASHBOARD ───────────────────────
+function enterDash(){
+  $('landing').style.display='none';
+  $('dashboard').style.display='block';
+  if(cu.isAdmin)$('adminNav').style.display='block';
+  refreshUI();
+  nav('overview');
+  initNotifications();
+  initDiscover();
+  initDocs();
+  startRT();
+  animateSidebar();
+}
+
+function refreshUI(){
+  const ini=cu.name[0].toUpperCase();
+  ['sbAvatar','headerAvatar','profAvatar'].forEach(id=>{const el=$(id);if(el)el.textContent=ini});
+  $('sbName').textContent=cu.name;
+  $('sbRole').textContent=cu.isAdmin?'👑 Admin':cap(cu.plan)+' Plan';
+  $('profName').textContent=cu.name;
+  $('profEmail').textContent=cu.email;
+  $('profPlan').innerHTML=cu.isAdmin?'<i class="fa-solid fa-crown"></i> Admin':'<i class="fa-solid fa-tag"></i> '+cap(cu.plan)+' Plan';
+  $('editName').value=cu.name;
+  $('editEmail').value=cu.email;
+  $('editBio').value=cu.bio||'';
+  $('profCreated').textContent=fmtDate(cu.createdAt);
+  $('profBots').textContent=(cu.bots||[]).length;
+  $('profSpent').textContent=(cu.coinsSpent||0)+' 🪙';
+  $('profPlanText').textContent=cu.isAdmin?'Admin':cap(cu.plan);
+  updateCoinUI();
+  updateBotBadge();
+  renderBots();
+  updateStats();
+  if(cu.isAdmin)updateAdmin();
+}
+
+function updateCoinUI(){
+  const c=cu.isAdmin?'∞':cu.coins;
+  ['ovCoins','walletCoins','headerCoins'].forEach(id=>{const el=$(id);if(el)el.textContent=c});
+  $('coinBadge').textContent=cu.isAdmin?'∞':cu.coins;
+  if(!cu.isAdmin)$('walletUSD').textContent='$'+(cu.coins*0.025).toFixed(2);
+  else $('walletUSD').textContent='Unlimited';
+}
+
+function updateBotBadge(){
+  const n=(cu.bots||[]).length;
+  $('botBadge').textContent=n;
+  $('ovBots').textContent=n;
+  if($('botsLabel'))$('botsLabel').textContent=n+' bot'+(n!==1?'s':'')+' registered';
+}
+
+function updateStats(){
+  if($('botPerf')){
+    const bots=cu.bots||[];
+    if(!bots.length){$('botPerf').innerHTML='<span style="color:var(--text3);font-size:12px">No bots added yet.</span>';return;}
+    $('botPerf').innerHTML=bots.map(b=>`
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span>+${b.number}</span>
+        <span class="status-pill ${b.status}" style="font-size:10px;padding:2px 8px">
+          <span class="status-dot ${b.status}"></span> ${cap(b.status)}
+        </span>
+      </div>`).join('');
+  }
+}
+
+// ─────────────────────── NAVIGATION ───────────────────────
+const pageMeta={
+  overview:['Overview','Welcome back to NexHost!'],
+  bots:['My Bots','Manage your WhatsApp bots'],
+  'add-bot':['Add Bot','Register a new WhatsApp number'],
+  stats:['Statistics','Real-time performance metrics'],
+  discover:['Discover Bots','Browse and install bot templates'],
+  wallet:['Wallet','Manage coins & purchases'],
+  notifications:['Notifications','Your alerts and updates'],
+  profile:['Profile','Manage your account'],
+  docs:['Documentation','Guides and API reference'],
+  support:['Support','Get help from our team'],
+  admin:['Admin Panel','System management']
+};
+
+function nav(id){
+  document.querySelectorAll('.dash-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg=$('page-'+id);
+  if(pg)pg.classList.add('active');
+  const meta=pageMeta[id]||[id,''];
+  $('pageTitle').textContent=meta[0];$('pageSub').textContent=meta[1];
+  // highlight sidebar
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.textContent.trim().toLowerCase().includes(meta[0].toLowerCase().split(' ')[0].toLowerCase()))n.classList.add('active');
+  });
+  if(window.innerWidth<900)$('sidebar').classList.remove('open');
+  // page-specific init
+  if(id==='stats')setTimeout(()=>{drawMainChart();drawCoinChart()},100);
+  if(id==='discover')renderDiscover();
+  if(id==='wallet')renderTx();
+  if(id==='notifications')renderNotifs();
+  if(id==='profile')refreshUI();
+  if(id==='admin')updateAdmin();
+  if(id==='docs')renderDoc(currentDoc||'start');
+}
+
+function toggleSidebar(){$('sidebar').classList.toggle('open')}
+function animateSidebar(){
+  document.querySelectorAll('.nav-item').forEach((it,i)=>{
+    it.style.opacity='0';it.style.transform='translateX(-16px)';
+    setTimeout(()=>{it.style.transition='.35s cubic-bezier(.16,1,.3,1)';it.style.opacity='';it.style.transform='';},80+i*40);
+  });
+}
+
+// ─────────────────────── BOTS ───────────────────────
+function addBot(){
+  const nick=$('botNick').value.trim();
+  const cc=$('countryCode').value;
+  const num=$('botNumber').value.replace(/\D/g,'');
+  const plan=$('botPlan').value;
+  const desc=$('botDesc').value.trim();
+  if(!num||num.length<6)return toast('Enter a valid phone number','error');
+  const full=cc+num;
+  if((cu.bots||[]).find(b=>b.number===full))return toast('This number is already registered','warn');
+  if(!cu.isAdmin){
+    if(plan==='basic'&&cu.coins<2)return toast('Not enough coins for Basic plan (need 2)','error');
+    if(plan==='pro'&&cu.coins<5)return toast('Not enough coins for Pro plan (need 5)','error');
+    if(plan==='starter'&&cu.bots.length>=1&&!cu.isAdmin&&cu.plan==='starter'){
+      // Allow more than 1 starter bot
+    }
+  }
+  if(!cu.bots)cu.bots=[];
+  const bot={id:Date.now().toString(),number:full,nickname:nick||'Bot '+full,plan,desc,status:'online',addedAt:new Date().toISOString(),msgs:0,template:null};
+  cu.bots.push(bot);
+  addActivity(`🤖 Bot +${full} added (${cap(plan)} plan)`,'fa-circle-plus','rgba(0,212,255,.1)','var(--accent)');
+  saveCU();updateBotBadge();renderBots();
+  $('botNumber').value='';$('botNick').value='';$('botDesc').value='';
+  toast(`Bot +${full} added! 🤖`,'success');
+  nav('bots');
+}
+
+function renderBots(){
+  const bots=cu.bots||[];
+  const el=$('botsList');if(!el)return;
+  if(!bots.length){el.innerHTML='<div class="empty-state"><i class="fa-brands fa-whatsapp"></i><p>No bots yet. Add your first WhatsApp bot!</p><button class="btn btn-primary btn-sm" onclick="nav(\'add-bot\')"><i class="fa-solid fa-plus"></i> Add First Bot</button></div>';return;}
+  el.innerHTML=bots.map((b,i)=>`
+    <div class="bot-card" style="animation-delay:${i*.07}s">
+      <div class="bot-ava"><i class="fa-brands fa-whatsapp" style="color:#fff"></i></div>
+      <div class="bot-info">
+        <div class="bname">${b.nickname}</div>
+        <div class="bnum">+${b.number}</div>
+        <span class="plan-tag ${b.plan}">${b.plan==='starter'?'🆓 Starter':b.plan==='basic'?'⚡ Basic':'🚀 Pro'}</span>
+      </div>
+      <div class="status-pill ${b.status}"><span class="status-dot ${b.status}"></span>${cap(b.status)}</div>
+      <div class="bot-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openBotModal('${b.id}')" title="Details"><i class="fa-solid fa-circle-info"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleBot('${b.id}')" title="${b.status==='online'?'Stop':'Start'}"><i class="fa-solid fa-${b.status==='online'?'pause':'play'}"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="deleteBot('${b.id}')" title="Remove"><i class="fa-solid fa-trash-can"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleBot(id){
+  const b=cu.bots.find(x=>x.id===id);if(!b)return;
+  b.status=b.status==='online'?'offline':'online';
+  saveCU();renderBots();updateStats();
+  toast(`Bot ${b.status==='online'?'started ✅':'stopped ⏸️'}`,b.status==='online'?'success':'info');
+}
+
+function deleteBot(id){
+  if(!confirm('Remove this bot?'))return;
+  cu.bots=cu.bots.filter(x=>x.id!==id);
+  saveCU();updateBotBadge();renderBots();updateStats();
+  toast('Bot removed','info');
+}
+
+function openBotModal(id){
+  const b=cu.bots.find(x=>x.id===id);if(!b)return;
+  $('botModalTitle').textContent=b.nickname;
+  $('botModalNum').textContent='+'+b.number;
+  $('botModalContent').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Status</span><span class="status-pill ${b.status}" style="font-size:11px;padding:2px 10px"><span class="status-dot ${b.status}"></span>${cap(b.status)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Plan</span><span class="plan-tag ${b.plan}">${cap(b.plan)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Added</span><span>${fmtDate(b.addedAt)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Description</span><span style="color:var(--text2)">${b.desc||'No description'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Template</span><span style="color:var(--text2)">${b.template||'None'}</span></div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);background:var(--bg);border-radius:8px;padding:10px;margin-bottom:16px">
+      <i class="fa-solid fa-coins" style="color:var(--yellow)"></i> Daily cost: <strong style="color:var(--text)">${b.plan==='starter'?'0':b.plan==='basic'?'2':'5'} coins/day</strong>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="toggleBot('${b.id}');closeModal('bot')">${b.status==='online'?'<i class="fa-solid fa-pause"></i> Stop Bot':'<i class="fa-solid fa-play"></i> Start Bot'}</button>
+      <button class="btn btn-ghost btn-sm" onclick="changeBotPlan('${b.id}')"><i class="fa-solid fa-arrow-up"></i> Change Plan</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteBot('${b.id}');closeModal('bot')"><i class="fa-solid fa-trash-can"></i> Remove</button>
+    </div>`;
+  showModal('bot');
+}
+
+function changeBotPlan(id){
+  const b=cu.bots.find(x=>x.id===id);if(!b)return;
+  const p=prompt('Enter new plan (starter/basic/pro):','');
+  if(!p||!['starter','basic','pro'].includes(p.toLowerCase()))return toast('Invalid plan','error');
+  b.plan=p.toLowerCase();saveCU();renderBots();closeModal('bot');
+  toast('Bot plan updated to '+cap(b.plan),'success');
+}
+
+// ─────────────────────── WALLET ───────────────────────
+let txLog=[];
+function initBuy(coins,usd){
+  if(!cu)return showModal('login');
+  buyPending={coins,usd};
+  $('buyEmoji')=coins>=300?'👑':coins>=100?'💎':'🪙';
+  $('buyCoinsNum').textContent=coins;
+  $('buyPriceDisplay').textContent='$'+usd+'.00';
+  $('buyDesc').textContent=`Get ${coins} coins for $${usd}.00`;
+  $('buyNewBalance').textContent=cu.coins+coins;
+  $('buyEmoji').textContent=coins>=1000?'🔥':coins>=300?'👑':coins>=100?'💎':'🪙';
+  showModal('buy');
+}
+function showBuyCoins(){showModal('buy');$('buyCoinsNum').textContent='?';$('buyPriceDisplay').textContent='Select a pack'}
+
+function confirmBuy(){
+  if(!buyPending.coins)return;
+  cu.coins+=buyPending.coins;
+  const tx={label:`Purchased ${buyPending.coins} coins`,val:buyPending.coins,type:'credit',date:new Date().toISOString()};
+  cu.txHistory=(cu.txHistory||[]);cu.txHistory.unshift(tx);
+  saveCU();updateCoinUI();renderTx();
+  addActivity(`💰 Bought ${buyPending.coins} coins for $${buyPending.usd}`,'fa-coins','rgba(255,214,0,.1)','var(--yellow)');
+  closeModal('buy');
+  toast(`${buyPending.coins} coins added! 🎉`,'success');
+  buyPending={};
+}
+
+function renderTx(){
+  const tx=(cu.txHistory||[]);
+  $('txCount').textContent=tx.length+' transaction'+(tx.length!==1?'s':'');
+  $('txList').innerHTML=tx.map(t=>`
+    <div class="tx-item">
+      <span><i class="fa-solid ${t.type==='credit'?'fa-arrow-down':'fa-arrow-up'}" style="color:${t.type==='credit'?'var(--green)':'var(--red)'}"></i> ${t.label}</span>
+      <span class="${t.type==='credit'?'tx-plus':'tx-minus'}">${t.type==='credit'?'+':'-'}${t.val} 🪙</span>
+    </div>`).join('') || '<div class="tx-item" style="color:var(--text3)">No transactions yet</div>';
+}
+
+// ─────────────────────── NOTIFICATIONS ───────────────────────
+let notifs=[];
+function initNotifications(){
+  if(notifs.length)return;
+  notifs=[
+    {id:1,title:'Welcome to NexHost! 🎉',msg:'Your account is ready. 10 free coins have been credited.',icon:'fa-gift',color:'rgba(0,230,118,.1)',iconColor:'var(--green)',time:'Just now',read:false},
+    {id:2,title:'Documentation Available',msg:'Check out our guides to learn how to add bots and manage coins.',icon:'fa-book-open',color:'rgba(0,212,255,.1)',iconColor:'var(--accent)',time:'2 min ago',read:false},
+    {id:3,title:'💡 Pro Tip',msg:'The 100-coin pack gives you 25% more value than buying 40 coins twice.',icon:'fa-lightbulb',color:'rgba(255,214,0,.1)',iconColor:'var(--yellow)',time:'5 min ago',read:false},
+  ];
+  updateNotifBadge();
+}
+
+function renderNotifs(){
+  const unread=notifs.filter(n=>!n.read).length;
+  $('notifCount').textContent=unread>0?`${unread} unread notification${unread!==1?'s':''}`:notifs.length+` notification${notifs.length!==1?'s':''}`;
+  $('notifList').innerHTML=notifs.length?notifs.map(n=>`
+    <div class="notif-item ${n.read?'':'unread'}" onclick="readNotif(${n.id})">
+      <div class="notif-icon" style="background:${n.color}"><i class="fa-solid ${n.icon}" style="color:${n.iconColor}"></i></div>
+      <div class="notif-content">
+        <div class="ntitle">${n.title}${!n.read?'<span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;margin-left:6px;vertical-align:middle"></span>':''}</div>
+        <div class="nmsg">${n.msg}</div>
+        <div class="ntime"><i class="fa-regular fa-clock"></i> ${n.time}</div>
+      </div>
+    </div>`).join(''):'<div style="text-align:center;padding:32px;color:var(--text3);font-size:13px"><i class="fa-solid fa-bell-slash" style="font-size:28px;display:block;margin-bottom:10px;opacity:.4"></i>No notifications</div>';
+}
+
+function readNotif(id){const n=notifs.find(x=>x.id===id);if(n)n.read=true;renderNotifs();updateNotifBadge();}
+function markAllRead(){notifs.forEach(n=>n.read=true);renderNotifs();updateNotifBadge();toast('All marked as read','success')}
+function clearNotifs(){if(!confirm('Clear all notifications?'))return;notifs=[];renderNotifs();updateNotifBadge();toast('Notifications cleared','info')}
+function updateNotifBadge(){
+  const u=notifs.filter(n=>!n.read).length;
+  $('notifBadge').textContent=u;
+  $('notifBadge').style.display=u?'':'none';
+  $('notifDot').style.display=u?'':'none';
+}
+function pushNotif(title,msg,icon,color,iconColor){
+  notifs.unshift({id:Date.now(),title,msg,icon,color,iconColor,time:'Just now',read:false});
+  updateNotifBadge();
+  if(document.getElementById('page-notifications').classList.contains('active'))renderNotifs();
+}
+
+// ─────────────────────── PROFILE ───────────────────────
+function saveProfile(){
+  const name=$('editName').value.trim();
+  const bio=$('editBio').value.trim();
+  if(!name)return toast('Name cannot be empty','error');
+  cu.name=name;cu.bio=bio;saveCU();refreshUI();
+  toast('Profile saved ✓','success');
+}
+function changePw(){
+  const pw=$('newPw').value;
+  if(!pw||pw.length<6)return toast('Password must be at least 6 characters','error');
+  cu.pw=pw;saveCU();$('newPw').value='';
+  toast('Password updated ✓','success');
+}
+
+// ─────────────────────── DISCOVER ───────────────────────
+const TEMPLATES=[
+  {id:'ec1',name:'E-Commerce Store Bot',desc:'Auto-reply to product inquiries, send catalogs, and process orders via WhatsApp.',icon:'fa-shopping-cart',color:'rgba(0,230,118,.1)',iconColor:'var(--green)',tags:['ecommerce','sales'],rating:4.8,installs:1240,author:'NexHost Official'},
+  {id:'cs1',name:'Customer Support Bot',desc:'Handle FAQs, ticket creation, escalation to agents, and satisfaction surveys.',icon:'fa-headset',color:'rgba(0,212,255,.1)',iconColor:'var(--accent)',tags:['customer','support'],rating:4.7,installs:980,author:'NexHost Official'},
+  {id:'inf1',name:'Daily News & Info Bot',desc:'Send subscribers daily news updates, weather, and curated content.',icon:'fa-newspaper',color:'rgba(255,140,66,.1)',iconColor:'var(--orange)',tags:['info','media'],rating:4.5,installs:650,author:'Community'},
+  {id:'apt1',name:'Appointment Scheduler',desc:'Allow customers to book, cancel, or reschedule appointments from WhatsApp.',icon:'fa-calendar-check',color:'rgba(124,77,255,.1)',iconColor:'var(--purple)',tags:['customer','ecommerce'],rating:4.9,installs:2100,author:'NexHost Official'},
+  {id:'sal1',name:'Sales Lead Qualifier',desc:'Capture leads, qualify them with automated questions, and route to your CRM.',icon:'fa-funnel-dollar',color:'rgba(255,214,0,.1)',iconColor:'var(--yellow)',tags:['sales','ecommerce'],rating:4.6,installs:430,author:'Community'},
+  {id:'edu1',name:'Education & Quiz Bot',desc:'Send study materials, run quizzes, and track student progress automatically.',icon:'fa-graduation-cap',color:'rgba(0,230,118,.1)',iconColor:'var(--green)',tags:['info'],rating:4.4,installs:320,author:'Community'},
+  {id:'res1',name:'Restaurant Order Bot',desc:'Take food orders, show menus, confirm delivery addresses and ETAs.',icon:'fa-utensils',color:'rgba(255,71,87,.1)',iconColor:'var(--red)',tags:['ecommerce','sales'],rating:4.7,installs:890,author:'NexHost Official'},
+  {id:'rem1',name:'Reminder & Alerts Bot',desc:'Send scheduled reminders, payment alerts, and custom notifications.',icon:'fa-bell',color:'rgba(0,212,255,.1)',iconColor:'var(--accent)',tags:['info'],rating:4.3,installs:560,author:'Community'},
+];
+let discoverTag='all';
+function initDiscover(){renderDiscover()}
+function filterDiscover(q){
+  const query=q.toLowerCase();
+  const cards=document.querySelectorAll('.discover-card');
+  cards.forEach(c=>{
+    const title=c.querySelector('h3').textContent.toLowerCase();
+    const desc=c.querySelector('p').textContent.toLowerCase();
+    c.style.display=(!query||title.includes(query)||desc.includes(query))?'':'none';
+  });
+}
+function filterDiscoverTag(tag,el){
+  discoverTag=tag;
+  document.querySelectorAll('#discoverFilters .chart-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderDiscover();
+}
+function renderDiscover(){
+  const g=$('discoverGrid');if(!g)return;
+  const filtered=discoverTag==='all'?TEMPLATES:TEMPLATES.filter(t=>t.tags.includes(discoverTag));
+  g.innerHTML=filtered.map(t=>`
+    <div class="discover-card" data-tags="${t.tags.join(',')}">
+      <div class="discover-icon" style="background:${t.color};color:${t.iconColor}"><i class="fa-solid ${t.icon}"></i></div>
+      <div class="tag-row">${t.tags.map(tag=>`<span class="tag">${tag}</span>`).join('')}</div>
+      <h3>${t.name}</h3>
+      <p>${t.desc}</p>
+      <div class="discover-meta">
+        <span><span class="discover-rating">${'★'.repeat(Math.floor(t.rating))}</span> ${t.rating}</span>
+        <span><i class="fa-solid fa-download" style="color:var(--text3)"></i> ${t.installs.toLocaleString()}</span>
+        <span style="color:var(--text3)">${t.author}</span>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px" onclick="openInstall('${t.id}')"><i class="fa-solid fa-download"></i> Install</button>
+    </div>`).join('') || '<div style="color:var(--text3);text-align:center;grid-column:1/-1;padding:32px">No templates found</div>';
+}
+function openInstall(tid){
+  if(!cu)return toast('Login to install templates','warn');
+  const t=TEMPLATES.find(x=>x.id===tid);if(!t)return;
+  installPending=t;
+  $('installTitle').textContent='Install: '+t.name;
+  $('installDesc').textContent=t.desc;
+  $('installInfo').innerHTML=`<i class="fa-solid fa-circle-info" style="color:var(--accent)"></i> This template will be configured on the selected bot. It adds automated message handling rules. <strong style="color:var(--text)">Free to install.</strong>`;
+  const sel=$('installBot');
+  sel.innerHTML='<option value="">— Select a bot —</option>'+(cu.bots||[]).map(b=>`<option value="${b.id}">+${b.number} (${cap(b.plan)})</option>`).join('');
+  if(!cu.bots?.length)sel.innerHTML='<option disabled>No bots registered — add one first</option>';
+  showModal('install');
+}
+function confirmInstall(){
+  const bid=$('installBot').value;
+  if(!bid)return toast('Select a bot first','error');
+  const b=cu.bots.find(x=>x.id===bid);if(!b)return;
+  b.template=installPending.name;
+  saveCU();renderBots();
+  closeModal('install');
+  toast(`"${installPending.name}" installed on +${b.number} ✅`,'success');
+  addActivity(`📦 Installed "${installPending.name}" on +${b.number}`,'fa-download','rgba(124,77,255,.1)','var(--purple)');
+  pushNotif('Template Installed ✅',`"${installPending.name}" is now active on +${b.number}`,'fa-download','rgba(124,77,255,.1)','var(--purple)');
+}
+
+// ─────────────────────── ACTIVITY ───────────────────────
+let activities=[];
+function addActivity(text,icon,bg,color){
+  activities.unshift({text,icon,bg,color,time:fmtTime()});
+  if(activities.length>8)activities.pop();
+  renderActivity();
+}
+function renderActivity(){
+  const el=$('activityList');if(!el)return;
+  if(!activities.length){el.innerHTML='<div style="font-size:13px;color:var(--text3);text-align:center;padding:16px 0"><i class="fa-solid fa-inbox" style="display:block;font-size:24px;margin-bottom:8px;opacity:.4"></i>No activity yet</div>';return;}
+  el.innerHTML=activities.map(a=>`
+    <div class="activity-item">
+      <div class="activity-icon" style="background:${a.bg}"><i class="fa-solid ${a.icon}" style="color:${a.color};font-size:12px"></i></div>
+      <span style="flex:1;font-size:12px;color:var(--text2)">${a.text}</span>
+      <span style="font-size:10px;color:var(--text3)">${a.time}</span>
+    </div>`).join('');
+}
+
+// ─────────────────────── DOCS ───────────────────────
+let currentDoc='start';
+const DOCS={
+  start:`<h2>Getting Started with NexHost</h2><p>Welcome to NexHost — the fastest way to host WhatsApp bots. Follow this guide to go from zero to live in under 5 minutes.</p>
+<h3><i class="fa-solid fa-user-plus"></i> Step 1: Create Your Account</h3><p>Sign up with your email and password. You'll receive <strong style="color:var(--yellow)">10 free starter coins</strong> credited immediately to your wallet.</p>
+<h3><i class="fa-brands fa-whatsapp"></i> Step 2: Add Your Bot</h3><p>Navigate to "Add Bot" in your sidebar. Enter your WhatsApp number with the full country code (no + sign).</p>
+<div class="code-block">Format: [country_code][local_number]<button class="copy-btn" onclick="copyText('2348056473526')">Copy</button>
+Nigeria → 2348056473526
+UK      → 447911123456
+USA     → 12125551234</div>
+<h3><i class="fa-solid fa-tag"></i> Step 3: Choose a Plan</h3><p>Select Starter (free), Basic (2 coins/day), or Pro (5 coins/day). Coins are deducted from your balance daily at midnight UTC.</p>
+<h3><i class="fa-solid fa-chart-area"></i> Step 4: Monitor Your Bot</h3><p>Use the Statistics page for real-time data — message counts, response time, server load, and uptime.</p>`,
+  bots:`<h2>Adding & Managing Bots</h2><p>Each WhatsApp number you register becomes a "bot" that NexHost hosts continuously.</p>
+<h3><i class="fa-solid fa-hashtag"></i> Number Format</h3><div class="code-block">✅  2348056473526   (Nigeria +234)<button class="copy-btn" onclick="copyText('2348056473526')">Copy</button>
+✅  447911123456    (UK +44)
+✅  12125551234     (USA +1)
+❌  08056473526     (missing country code)
+❌  +2348056473526  (remove the +)</div>
+<h3><i class="fa-solid fa-sliders"></i> Bot Plans</h3><p>Each bot can have its own plan. A single account can have bots on different plans simultaneously.</p>
+<h3><i class="fa-solid fa-puzzle-piece"></i> Templates</h3><p>Visit "Discover Bots" to install pre-built templates — E-Commerce, Customer Support, News bots and more. Templates are free to install.</p>`,
+  coins:`<h2>Coins & Billing</h2><p>NexHost uses a coin-based economy. Coins are non-expiring and deducted daily per bot based on its plan.</p>
+<h3><i class="fa-solid fa-calculator"></i> Daily Cost</h3><div class="code-block">Starter Plan → 0  coins/day (free forever)
+Basic Plan   → 2  coins/day per bot
+Pro Plan     → 5  coins/day per bot</div>
+<h3><i class="fa-solid fa-cart-shopping"></i> Buying Coins</h3><div class="code-block">Pack 1  →  40 coins  = $1.00  ($0.025/coin)
+Pack 2  → 100 coins  = $2.00  (best value)
+Pack 3  → 300 coins  = $5.00  (mega pack)
+Pack 4  → 1000 coins = $15.00 (whale pack)</div>
+<h3><i class="fa-solid fa-pause"></i> What Happens When Coins Run Out?</h3><p>Paid bots (Basic/Pro) pause automatically. Starter bots continue running. Top up coins to resume paused bots.</p>`,
+  plans:`<h2>Bot Plans</h2>
+<h3><i class="fa-solid fa-gift"></i> Starter — Free</h3><p>0 coins/day. 1 bot, 500 messages/day. Basic analytics. No priority support. Perfect for testing.</p>
+<h3><i class="fa-solid fa-bolt"></i> Basic — 2 coins/day</h3><p>Up to 3 bots, 5,000 messages/day. Full analytics dashboard. Priority support. Custom command handling.</p>
+<h3><i class="fa-solid fa-rocket"></i> Pro — 5 coins/day</h3><p>Unlimited bots and messages. Advanced analytics. 24/7 dedicated support. Dedicated server resources. Fastest response times.</p>
+<div class="code-block">Plan upgrade takes effect immediately.
+Plan downgrade takes effect next billing cycle.
+Unused coins roll over — they never expire.</div>`,
+  api:`<h2>API Reference</h2><p>NexHost provides a REST API for developers to manage bots programmatically.</p>
+<h3><i class="fa-solid fa-key"></i> Authentication</h3><div class="code-block">Authorization: Bearer YOUR_API_KEY<button class="copy-btn" onclick="copyText('Authorization: Bearer YOUR_API_KEY')">Copy</button>
+Content-Type: application/json</div>
+<h3><i class="fa-solid fa-robot"></i> Get All Bots</h3><div class="code-block">GET https://api.nexhost.com/v1/bots</div>
+<h3><i class="fa-solid fa-circle-plus"></i> Add Bot</h3><div class="code-block">POST https://api.nexhost.com/v1/bots<button class="copy-btn" onclick="copyText('POST https://api.nexhost.com/v1/bots')">Copy</button>
+{
+  "number": "2348056473526",
+  "plan": "basic",
+  "nickname": "My Bot"
+}</div>
+<h3><i class="fa-solid fa-paper-plane"></i> Send Message</h3><div class="code-block">POST https://api.nexhost.com/v1/bots/{id}/send
+{
+  "to": "2348056473526",
+  "message": "Hello from NexHost!",
+  "type": "text"
+}</div>`,
+  webhooks:`<h2>Webhooks</h2><p>Receive real-time events from your bots via webhooks.</p>
+<h3><i class="fa-solid fa-link"></i> Setup</h3><div class="code-block">POST https://api.nexhost.com/v1/webhooks<button class="copy-btn" onclick="copyText('POST https://api.nexhost.com/v1/webhooks')">Copy</button>
+{
+  "url": "https://yoursite.com/webhook",
+  "events": ["message.received", "bot.offline", "coin.low"]
+}</div>
+<h3><i class="fa-solid fa-code"></i> Event Payload</h3><div class="code-block">{
+  "event": "message.received",
+  "bot_id": "bot_123",
+  "from": "2348056473526",
+  "message": "Hello!",
+  "timestamp": "2025-01-01T12:00:00Z"
+}</div>
+<h3><i class="fa-solid fa-shield-halved"></i> Security</h3><p>All webhook payloads include an <code style="color:var(--accent)">X-NexHost-Signature</code> header for verification.</p>`,
+  faq:`<h2>Frequently Asked Questions</h2>
+<h3><i class="fa-solid fa-circle-question"></i> What happens when my coins run out?</h3><p>Bots on paid plans (Basic/Pro) pause automatically. Starter bots continue for free. Simply top up coins to reactivate paused bots.</p>
+<h3><i class="fa-solid fa-circle-question"></i> Can I run multiple bots on one account?</h3><p>Yes! You can register as many numbers as you want. Each bot has its own independent plan.</p>
+<h3><i class="fa-solid fa-circle-question"></i> Do coins expire?</h3><p>No. Coins never expire. Buy them whenever and use them at your own pace.</p>
+<h3><i class="fa-solid fa-circle-question"></i> Is my WhatsApp number safe?</h3><p>Absolutely. We use AES-256 encryption for all stored data and TLS 1.3 for all connections. We never share your data.</p>
+<h3><i class="fa-solid fa-circle-question"></i> Can I change my bot's plan anytime?</h3><p>Yes. Click on any bot and select "Change Plan". Upgrades take effect immediately; downgrades on the next billing cycle.</p>`,
+};
+function initDocs(){renderDoc('start')}
+function showDoc(id,el){
+  currentDoc=id;
+  renderDoc(id);
+  document.querySelectorAll('.docs-nav-item').forEach(d=>d.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+function renderDoc(id){
+  const el=$('docContent');if(!el)return;
+  el.innerHTML=DOCS[id]||'<p style="color:var(--text2)">Select a topic from the left.</p>';
+}
+
+// ─────────────────────── SUPPORT ───────────────────────
+function submitTicket(){
+  const subj=$('ticketSubj').value.trim();
+  const msg=$('ticketMsg').value.trim();
+  if(!subj||!msg)return toast('Please fill subject and message','error');
+  const cat=$('ticketCat').value;
+  const pri=$('ticketPriority').value;
+  $('ticketSubj').value='';$('ticketMsg').value='';
+  toast(`Ticket submitted (${pri} priority) ✅ We'll respond soon.`,'success',4500);
+  pushNotif('Support Ticket Submitted 🎫',`Your ticket "${subj}" (${cat}) has been received.`,'fa-ticket','rgba(0,212,255,.1)','var(--accent)');
+  addActivity(`🎫 Support ticket submitted: "${subj}"`,'fa-ticket','rgba(0,212,255,.1)','var(--accent)');
+}
+
+// ─────────────────────── ADMIN ───────────────────────
+function updateAdmin(){
+  if(!cu?.isAdmin)return;
+  $('admUsers').textContent=users.length;
+  const tb=users.reduce((a,u)=>a+(u.bots||[]).length,0);
+  $('admBots').textContent=tb;
+  $('admCoins').textContent=users.reduce((a,u)=>a+(u.coins||0),0);
+  const body=$('admTable');
+  body.innerHTML=users.map(u=>`
+    <tr>
+      <td style="font-weight:600">${u.name}</td>
+      <td style="color:var(--text2)">${u.email}</td>
+      <td><span style="background:rgba(0,212,255,.1);color:var(--accent);border-radius:100px;padding:2px 8px;font-size:10px;font-weight:700">${u.isAdmin?'👑 Admin':cap(u.plan)}</span></td>
+      <td style="color:var(--yellow);font-weight:700">${u.isAdmin?'∞':u.coins}</td>
+      <td>${(u.bots||[]).length}</td>
+      <td style="color:var(--text3)">${fmtDate(u.createdAt)}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="adminGiveCoinsTo('${u.id}')" title="Give coins"><i class="fa-solid fa-coins"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="adminSetPlan('${u.id}')" title="Set plan"><i class="fa-solid fa-tag"></i></button>
+        ${!u.isAdmin?`<button class="btn btn-danger btn-sm" onclick="adminDeleteU('${u.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>`:''}
+      </td>
+    </tr>`).join('');
+}
+function adminGiveCoins(){toast('Click the 🪙 button next to a user in the table','info')}
+function adminGiveCoinsTo(uid){
+  const n=parseInt(prompt('Coins to give:','10'));
+  if(!n||n<=0)return;
+  const u=users.find(x=>x.id===uid);if(!u)return;
+  u.coins+=n;saveUsers();
+  if(cu.id===uid){cu.coins+=n;saveCU();updateCoinUI();}
+  updateAdmin();toast(`Gave ${n} coins to ${u.name}`,'success');
+}
+function adminSetPlan(uid){
+  const p=prompt('Set plan (starter/basic/pro):','starter');
+  if(!p||!['starter','basic','pro'].includes(p))return;
+  const u=users.find(x=>x.id===uid);if(!u)return;
+  u.plan=p;saveUsers();updateAdmin();toast(`${u.name}'s plan set to ${cap(p)}`,'success');
+}
+function adminDeleteU(uid){
+  if(!confirm('Delete this user?'))return;
+  const i=users.findIndex(u=>u.id===uid);if(i===-1)return;
+  users.splice(i,1);saveUsers();updateAdmin();toast('User deleted','info');
+}
+function adminBroadcast(){
+  const msg=prompt('Broadcast message to all users:','');
+  if(!msg)return;
+  users.forEach(u=>{
+    if(!u.isAdmin)pushNotif('📢 Platform Announcement',msg,'fa-bullhorn','rgba(255,214,0,.1)','var(--yellow)');
+  });
+  toast(`Broadcast sent to ${users.length} users`,'success');
+}
+function adminRestart(){
+  if(!confirm('Restart all bots across all users?'))return;
+  let count=0;
+  users.forEach(u=>{(u.bots||[]).forEach(b=>{if(b.status==='offline'){b.status='online';count++;}})});
+  saveUsers();renderBots();
+  toast(`Restarted ${count} offline bot${count!==1?'s':''}. All systems online.`,'success');
+}
+function adminUpgradePlan(){
+  const email=prompt('Enter user email:','');
+  if(!email)return;
+  const u=users.find(x=>x.email===email);
+  if(!u)return toast('User not found','error');
+  adminSetPlan(u.id);
+}
+function adminDeleteUser(){
+  const email=prompt('Enter email of user to remove:','');
+  if(!email)return;
+  const u=users.find(x=>x.email===email);
+  if(!u)return toast('User not found','error');
+  adminDeleteU(u.id);
+}
+
+// ─────────────────────── CHARTS ───────────────────────
+let chartPeriod='1h';
+let rtMsgs=0;
+function setChartPeriod(p,el){
+  chartPeriod=p;
+  document.querySelectorAll('.chart-tabs .chart-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  drawMainChart();
+}
+
+function drawMainChart(){
+  const canvas=$('mainChart');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const pts=chartPeriod==='1h'?20:chartPeriod==='6h'?24:30;
+  canvas.width=canvas.offsetWidth||600;canvas.height=180;
+  const w=canvas.width,h=canvas.height,pad=24;
+  const d1=Array.from({length:pts},()=>Math.floor(Math.random()*80+10));
+  const d2=Array.from({length:pts},()=>Math.floor(Math.random()*55+5));
+  const xS=(w-pad*2)/(pts-1),maxV=120;
+  ctx.clearRect(0,0,w,h);
+  // Grid
+  ctx.strokeStyle='rgba(30,45,69,.5)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad+(i/4)*(h-pad*2);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();}
+  let prog=0;
+  const anim=()=>{
+    prog=Math.min(prog+.04,1);
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle='rgba(30,45,69,.5)';ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){const y=pad+(i/4)*(h-pad*2);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();}
+    const drawLine=(d,col,fill)=>{
+      const dp=Math.ceil(prog*pts);
+      ctx.save();
+      ctx.beginPath();ctx.rect(pad,0,(dp/pts)*(w-pad*2),h);ctx.clip();
+      ctx.beginPath();
+      d.forEach((v,i)=>{const x=pad+i*xS,y=h-pad-(v/maxV)*(h-pad*2);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+      ctx.lineTo(pad+(pts-1)*xS,h-pad);ctx.lineTo(pad,h-pad);ctx.closePath();
+      ctx.fillStyle=fill;ctx.fill();
+      ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.shadowColor=col;ctx.shadowBlur=10;
+      d.forEach((v,i)=>{const x=pad+i*xS,y=h-pad-(v/maxV)*(h-pad*2);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+      ctx.stroke();ctx.shadowBlur=0;
+      d.slice(0,dp).forEach((v,i)=>{const x=pad+i*xS,y=h-pad-(v/maxV)*(h-pad*2);ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();});
+      ctx.restore();
+    };
+    drawLine(d1,'#00e676','rgba(0,230,118,.07)');drawLine(d2,'#00d4ff','rgba(0,212,255,.05)');
+    if(prog<1)requestAnimationFrame(anim);
+  };
+  anim();
+}
+
+function drawCoinChart(){
+  const canvas=$('coinChart');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth||300;canvas.height=120;
+  const w=canvas.width,h=canvas.height,pad=16;
+  const data=[2,5,0,3,2,8,4];const labels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const bw=(w-pad*2)/data.length-4;const maxV=Math.max(...data)+2;
+  ctx.clearRect(0,0,w,h);
+  let prog=0;
+  const anim=()=>{
+    prog=Math.min(prog+.05,1);ctx.clearRect(0,0,w,h);
+    data.forEach((v,i)=>{
+      const x=pad+i*((w-pad*2)/data.length);
+      const bh=(v/maxV)*(h-pad-20)*prog;
+      const y=h-20-bh;
+      const grad=ctx.createLinearGradient(0,y,0,h-20);
+      grad.addColorStop(0,'rgba(255,214,0,.7)');grad.addColorStop(1,'rgba(255,214,0,.1)');
+      ctx.fillStyle=grad;ctx.beginPath();
+      const r=4;ctx.roundRect?ctx.roundRect(x,y,bw,bh,r):ctx.rect(x,y,bw,bh);ctx.fill();
+      ctx.fillStyle='rgba(138,155,184,.6)';ctx.font='9px DM Sans';ctx.textAlign='center';
+      ctx.fillText(labels[i],x+bw/2,h-5);
+    });
+    if(prog<1)requestAnimationFrame(anim);
+  };anim();
+}
+
+// ─────────────────────── REAL-TIME ───────────────────────
+function startRT(){
+  clearInterval(rtTimer);
+  rtTimer=setInterval(()=>{
+    if(!cu)return;
+    rtMsgs+=Math.floor(Math.random()*4);
+    [$('ovMsgs'),$('stMsgs')].forEach(el=>{if(el){const old=el.textContent;el.textContent=rtMsgs;if(old!==String(rtMsgs)){el.style.animation='none';void el.offsetWidth;el.style.animation='fadeUp .3s ease';}}}),
+    (()=>{const v=Math.floor(Math.random()*40+15);const el=$('stLoad');if(el)el.textContent=v+'%';})();
+    const t=new Date().toLocaleTimeString();const el=$('lastCheck');if(el)el.textContent=t;
+  },2500);
+}
+
+// ─────────────────────── MODALS ───────────────────────
+function showModal(id){const m=$('modal-'+id);if(m)m.classList.remove('hidden')}
+function closeModal(id){const m=$('modal-'+id);if(m)m.classList.add('hidden')}
+document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)closeModal(ov.id.replace('modal-',''))}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay:not(.hidden)').forEach(o=>closeModal(o.id.replace('modal-','')))});
+
+// ─────────────────────── PW UTILS ───────────────────────
+function togglePw(id,el){
+  const i=$(id);const t=i.type==='text';
+  i.type=t?'password':'text';
+  el.innerHTML=t?'<i class="fa-solid fa-eye"></i>':'<i class="fa-solid fa-eye-slash"></i>';
+}
+function pwStrength(inp,barPrefix,lblId){
+  const v=inp.value;let s=0;
+  if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  const cols=['','var(--red)','var(--red)','var(--yellow)','var(--green)'];
+  const lbls=['','Weak','Fair','Good','Strong'];
+  for(let i=1;i<=4;i++){const b=$(barPrefix+i);if(b)b.style.background=i<=s?cols[s]:'var(--border)';}
+  const l=$(lblId);if(l){l.textContent=lbls[s];l.style.color=cols[s];}
+}
+
+// ─────────────────────── LANDING UTILS ───────────────────────
+function scrollTo(id){
+  const el=document.getElementById(id);
+  if(el)el.scrollIntoView({behavior:'smooth'});
+  $('mobileNav')?.classList.remove('open');
+}
+function toggleMobile(){$('mobileNav').classList.toggle('open')}
+window.addEventListener('scroll',()=>{
+  const n=$('navbar');if(!n)return;
+  n.classList.toggle('scrolled',window.scrollY>60);
+},{passive:true});
+
+// Scroll reveal
+const ro=new IntersectionObserver(ents=>ents.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');ro.unobserve(e.target);}}),{threshold:.1,rootMargin:'0px 0px -36px 0px'});
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>ro.observe(el));
+
+// Counters
+function animCount(id,target){
+  const el=$(id);if(!el)return;
+  let start=null;const dur=1800;
+  const ease=t=>t===1?1:1-Math.pow(2,-10*t);
+  const step=ts=>{if(!start)start=ts;const p=Math.min((ts-start)/dur,1);el.textContent=Math.floor(ease(p)*target).toLocaleString();if(p<1)requestAnimationFrame(step);else el.textContent=target.toLocaleString()};
+  requestAnimationFrame(step);
+}
+setTimeout(()=>{animCount('c1',1247);animCount('c2',3891);animCount('c4',89243);},700);
+
+// Spotlight
+const spot=document.createElement('div');
+spot.style.cssText='position:fixed;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.03) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);will-change:left,top';
+document.body.appendChild(spot);
+let sx=0,sy=0;
+window.addEventListener('mousemove',e=>{sx=e.clientX;sy=e.clientY},{passive:true});
+(function moveS(){spot.style.left=sx+'px';spot.style.top=sy+'px';requestAnimationFrame(moveS)})();
+
+// ─────────────────────── INIT ───────────────────────
+if(cu){
+  // Reload user data from storage in case it's stale
+  const fresh=users.find(u=>u.id===cu.id);
+  if(fresh){cu=fresh;saveCU();}
+  enterDash();
+}
+</script>
+</body>
+</html>
