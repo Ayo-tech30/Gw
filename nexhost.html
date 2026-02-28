@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexHost - WhatsApp Bot Hosting</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --bg: #080b12;
+  --bg2: #0d1120;
+  --bg3: #121826;
+  --card: #141a27;
+  --card2: #1a2235;
+  --border: #1e2d45;
+  --border2: #243350;
+  --accent: #00d4ff;
+  --accent2: #0099cc;
+  --green: #00e676;
+  --yellow: #ffd600;
+  --red: #ff4757;
+  --purple: #7c4dff;
+  --text: #e8edf5;
+  --text2: #8a9bb8;
+  --text3: #5a6a85;
+  --glow: 0 0 20px rgba(0,212,255,0.3);
+  --glow2: 0 0 40px rgba(0,212,255,0.15);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
+h1,h2,h3,h4,h5 { font-family:'Syne',sans-serif; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:var(--bg2); }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+/* UTILS */
+.hidden { display:none!important; }
+.flex { display:flex; }
+.items-center { align-items:center; }
+.gap-2 { gap:8px; }
+.gap-3 { gap:12px; }
+
+/* TOAST */
+#toast-container { position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
+.toast { background:var(--card2); border:1px solid var(--border2); border-radius:10px; padding:14px 18px; font-size:14px; display:flex; align-items:center; gap:10px; animation:slideIn .3s ease; min-width:280px; max-width:350px; }
+.toast.success { border-color:var(--green); }
+.toast.error { border-color:var(--red); }
+.toast.info { border-color:var(--accent); }
+.toast i { font-size:16px; }
+.toast.success i { color:var(--green); }
+.toast.error i { color:var(--red); }
+.toast.info i { color:var(--accent); }
+@keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes slideOut { to { transform:translateX(110%); opacity:0; } }
+
+/* MODAL OVERLAY */
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:800; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); animation:fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.modal { background:var(--bg3); border:1px solid var(--border2); border-radius:20px; padding:36px; width:100%; max-width:480px; position:relative; animation:modalIn .3s ease; }
+@keyframes modalIn { from { transform:translateY(30px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+.modal-close { position:absolute; top:16px; right:16px; background:var(--card2); border:1px solid var(--border); border-radius:8px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text2); transition:.2s; }
+.modal-close:hover { color:var(--text); border-color:var(--border2); }
+.modal h2 { font-size:22px; margin-bottom:6px; }
+.modal p.sub { color:var(--text2); font-size:14px; margin-bottom:24px; }
+
+/* FORM */
+.form-group { margin-bottom:18px; }
+.form-group label { display:block; font-size:13px; color:var(--text2); margin-bottom:6px; font-weight:500; }
+.form-group input, .form-group select, .form-group textarea {
+  width:100%; background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:12px 14px; color:var(--text); font-family:inherit; font-size:14px; transition:.2s; outline:none;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,212,255,0.1);
+}
+.form-group input::placeholder { color:var(--text3); }
+.pw-wrap { position:relative; }
+.pw-wrap input { padding-right:44px; }
+.pw-toggle { position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text3); transition:.2s; font-size:15px; }
+.pw-toggle:hover { color:var(--text2); }
+.strength-bar { display:flex; gap:4px; margin-top:6px; }
+.strength-bar span { flex:1; height:3px; border-radius:2px; background:var(--border); transition:.3s; }
+.strength-label { font-size:11px; color:var(--text3); margin-top:4px; }
+
+/* BUTTONS */
+.btn { display:inline-flex; align-items:center; gap:8px; padding:12px 22px; border-radius:10px; font-family:'Syne',sans-serif; font-weight:600; font-size:14px; cursor:pointer; border:none; transition:.2s; text-decoration:none; white-space:nowrap; }
+.btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000; }
+.btn-primary:hover { transform:translateY(-1px); box-shadow:var(--glow); }
+.btn-outline { background:transparent; border:1px solid var(--border2); color:var(--text); }
+.btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+.btn-ghost { background:var(--card2); border:1px solid var(--border); color:var(--text); }
+.btn-ghost:hover { border-color:var(--border2); background:var(--bg3); }
+.btn-danger { background:rgba(255,71,87,0.15); border:1px solid rgba(255,71,87,0.3); color:var(--red); }
+.btn-danger:hover { background:rgba(255,71,87,0.25); }
+.btn-green { background:linear-gradient(135deg,#00e676,#00b248); color:#000; }
+.btn-green:hover { transform:translateY(-1px); box-shadow:0 0 20px rgba(0,230,118,0.3); }
+.btn-sm { padding:8px 14px; font-size:12px; border-radius:8px; }
+.btn-block { width:100%; justify-content:center; }
+
+/* =================== LANDING PAGE =================== */
+#landing { min-height:100vh; }
+nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:16px 40px; display:flex; align-items:center; justify-content:space-between; background:rgba(8,11,18,0.8); backdrop-filter:blur(12px); border-bottom:1px solid rgba(30,45,69,0.5); }
+.nav-logo { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--text); display:flex; align-items:center; gap:10px; }
+.nav-logo .logo-icon { width:34px; height:34px; background:linear-gradient(135deg,var(--accent),var(--purple)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+.nav-links { display:flex; align-items:center; gap:32px; }
+.nav-links a { color:var(--text2); text-decoration:none; font-size:14px; font-weight:500; transition:.2s; cursor:pointer; }
+.nav-links a:hover { color:var(--text); }
+.nav-actions { display:flex; gap:10px; align-items:center; }
+.hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:4px; }
+.hamburger span { width:22px; height:2px; background:var(--text2); border-radius:2px; transition:.3s; }
+.mobile-nav { display:none; position:fixed; top:65px; left:0; right:0; background:var(--bg3); border-bottom:1px solid var(--border); padding:20px; z-index:99; flex-direction:column; gap:16px; }
+.mobile-nav.open { display:flex; }
+.mobile-nav a { color:var(--text2); text-decoration:none; font-size:15px; padding:8px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+
+/* HERO */
+.hero { padding:160px 40px 100px; text-align:center; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-200px; left:50%; transform:translateX(-50%); width:600px; height:600px; background:radial-gradient(circle,rgba(0,212,255,0.08) 0%,transparent 70%); pointer-events:none; }
+.hero-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.2); border-radius:100px; padding:6px 16px; font-size:13px; color:var(--accent); margin-bottom:24px; }
+.hero-badge i { font-size:11px; }
+.hero h1 { font-size:clamp(42px,6vw,80px); font-weight:800; line-height:1.05; margin-bottom:20px; }
+.hero h1 span { background:linear-gradient(135deg,var(--accent),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hero p { font-size:18px; color:var(--text2); max-width:560px; margin:0 auto 36px; line-height:1.7; }
+.hero-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.hero-stats { display:flex; gap:48px; justify-content:center; margin-top:64px; flex-wrap:wrap; }
+.hero-stat { text-align:center; }
+.hero-stat .num { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; color:var(--accent); }
+.hero-stat .lbl { font-size:13px; color:var(--text3); margin-top:4px; }
+
+/* FEATURES */
+.section { padding:80px 40px; }
+.section-header { text-align:center; margin-bottom:60px; }
+.section-header h2 { font-size:clamp(28px,4vw,44px); font-weight:800; margin-bottom:12px; }
+.section-header p { color:var(--text2); font-size:16px; max-width:500px; margin:0 auto; }
+.chip { display:inline-block; background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.2); color:var(--accent); font-size:12px; padding:4px 12px; border-radius:100px; margin-bottom:14px; font-weight:600; }
+
+.features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; max-width:1100px; margin:0 auto; }
+.feature-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:28px; transition:.3s; }
+.feature-card:hover { border-color:var(--border2); transform:translateY(-4px); box-shadow:0 20px 40px rgba(0,0,0,0.3); }
+.feature-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:16px; }
+.feature-card h3 { font-size:17px; margin-bottom:8px; }
+.feature-card p { font-size:14px; color:var(--text2); line-height:1.7; }
+
+/* PRICING */
+.pricing-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; max-width:1000px; margin:0 auto; }
+.plan-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:32px; transition:.3s; position:relative; overflow:hidden; }
+.plan-card.popular { border-color:var(--accent); }
+.plan-card.popular::before { content:'Most Popular'; position:absolute; top:16px; right:-28px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000; font-size:11px; font-weight:700; padding:4px 36px; transform:rotate(45deg); font-family:'Syne',sans-serif; }
+.plan-card:hover { transform:translateY(-4px); }
+.plan-name { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:8px; }
+.plan-price { font-family:'Syne',sans-serif; font-size:38px; font-weight:800; margin:16px 0 4px; }
+.plan-price span { font-size:16px; color:var(--text2); }
+.plan-desc { font-size:13px; color:var(--text2); margin-bottom:24px; }
+.plan-features { list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+.plan-features li { font-size:14px; display:flex; align-items:center; gap:8px; }
+.plan-features li i { color:var(--green); font-size:12px; }
+.plan-features li.no i { color:var(--red); }
+
+/* COINS SECTION */
+.coins-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; max-width:900px; margin:0 auto; }
+.coin-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; text-align:center; transition:.3s; cursor:pointer; }
+.coin-card:hover { border-color:var(--yellow); transform:translateY(-3px); }
+.coin-card.featured { border-color:var(--accent); }
+.coin-icon { font-size:32px; margin-bottom:12px; }
+.coin-amount { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--yellow); }
+.coin-price { font-size:22px; font-weight:700; color:var(--text); margin:4px 0; }
+.coin-badge { font-size:11px; background:rgba(0,230,118,0.15); color:var(--green); border-radius:100px; padding:2px 8px; display:inline-block; margin-top:4px; }
+
+/* HOW IT WORKS */
+.steps { display:flex; gap:0; max-width:900px; margin:0 auto; flex-wrap:wrap; }
+.step { flex:1; min-width:200px; text-align:center; padding:24px; position:relative; }
+.step:not(:last-child)::after { content:''; position:absolute; top:36px; right:-1px; width:2px; height:50px; background:linear-gradient(to bottom,var(--border2),transparent); }
+.step-num { width:56px; height:56px; border-radius:50%; border:2px solid var(--border2); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:var(--accent); margin:0 auto 16px; }
+.step h3 { font-size:15px; margin-bottom:8px; }
+.step p { font-size:13px; color:var(--text2); line-height:1.6; }
+
+/* FOOTER */
+footer { background:var(--bg2); border-top:1px solid var(--border); padding:60px 40px 30px; }
+.footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px; max-width:1100px; margin:0 auto; }
+.footer-brand .nav-logo { margin-bottom:16px; }
+.footer-brand p { font-size:14px; color:var(--text2); line-height:1.7; }
+.footer-col h4 { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; margin-bottom:16px; }
+.footer-col a { display:block; font-size:14px; color:var(--text2); text-decoration:none; margin-bottom:8px; transition:.2s; cursor:pointer; }
+.footer-col a:hover { color:var(--accent); }
+.footer-bottom { border-top:1px solid var(--border); margin-top:40px; padding-top:24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; max-width:1100px; margin-left:auto; margin-right:auto; }
+.footer-bottom p { font-size:13px; color:var(--text3); }
+.socials { display:flex; gap:12px; }
+.socials a { width:34px; height:34px; border-radius:8px; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text2); font-size:14px; transition:.2s; text-decoration:none; cursor:pointer; }
+.socials a:hover { border-color:var(--accent); color:var(--accent); }
+
+/* =================== DASHBOARD =================== */
+#dashboard { display:none; min-height:100vh; }
+.dash-layout { display:grid; grid-template-columns:260px 1fr; min-height:100vh; }
+.sidebar { background:var(--bg2); border-right:1px solid var(--border); position:fixed; top:0; left:0; width:260px; height:100vh; display:flex; flex-direction:column; z-index:50; transition:.3s; }
+.sidebar-logo { padding:24px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.sidebar-logo .logo-icon { width:34px; height:34px; background:linear-gradient(135deg,var(--accent),var(--purple)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+.sidebar-logo span { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+.sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+.sidebar-section { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; padding:8px 8px 4px; margin-top:8px; }
+.nav-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:10px; cursor:pointer; transition:.2s; color:var(--text2); font-size:14px; font-weight:500; position:relative; }
+.nav-item:hover { background:var(--card); color:var(--text); }
+.nav-item.active { background:rgba(0,212,255,0.1); color:var(--accent); }
+.nav-item.active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:20px; background:var(--accent); border-radius:0 2px 2px 0; }
+.nav-item i { width:18px; text-align:center; font-size:15px; }
+.nav-badge { margin-left:auto; background:var(--red); color:#fff; font-size:10px; padding:2px 6px; border-radius:100px; font-weight:700; }
+.sidebar-footer { padding:16px 20px; border-top:1px solid var(--border); }
+.user-pill { display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; background:var(--card); border:1px solid var(--border); }
+.avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--purple)); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:#000; flex-shrink:0; }
+.user-info .name { font-size:13px; font-weight:600; }
+.user-info .plan { font-size:11px; color:var(--accent); }
+
+.dash-main { margin-left:260px; padding:28px; min-height:100vh; }
+.dash-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
+.dash-title h2 { font-size:22px; font-weight:800; }
+.dash-title p { font-size:13px; color:var(--text2); margin-top:2px; }
+.dash-header-actions { display:flex; align-items:center; gap:12px; }
+.notif-btn { width:40px; height:40px; border-radius:10px; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text2); position:relative; transition:.2s; }
+.notif-btn:hover { border-color:var(--border2); color:var(--text); }
+.notif-dot { position:absolute; top:8px; right:8px; width:8px; height:8px; border-radius:50%; background:var(--red); border:2px solid var(--bg2); }
+.menu-toggle { display:none; }
+
+/* DASHBOARD PAGES */
+.dash-page { display:none; }
+.dash-page.active { display:block; }
+
+/* STATS GRID */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; transition:.2s; }
+.stat-card:hover { border-color:var(--border2); }
+.stat-card .label { font-size:12px; color:var(--text2); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+.stat-card .value { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; }
+.stat-card .change { font-size:12px; margin-top:6px; display:flex; align-items:center; gap:4px; }
+.change.up { color:var(--green); }
+.change.down { color:var(--red); }
+
+/* BOTS */
+.bots-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.bot-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; display:flex; align-items:center; gap:16px; margin-bottom:12px; transition:.2s; }
+.bot-card:hover { border-color:var(--border2); }
+.bot-avatar { width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#25D366,#128C7E); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.bot-info { flex:1; }
+.bot-info .num { font-weight:600; font-size:15px; }
+.bot-info .plan-tag { font-size:11px; background:rgba(0,212,255,0.1); color:var(--accent); border-radius:100px; padding:2px 8px; display:inline-block; margin-top:2px; }
+.bot-status { display:flex; align-items:center; gap:6px; font-size:13px; }
+.status-dot { width:8px; height:8px; border-radius:50%; }
+.status-dot.online { background:var(--green); box-shadow:0 0 8px var(--green); }
+.status-dot.offline { background:var(--red); }
+.status-dot.pending { background:var(--yellow); }
+.bot-actions { display:flex; gap:8px; }
+
+/* NOTIFICATIONS */
+.notif-list { display:flex; flex-direction:column; gap:10px; }
+.notif-item { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; gap:12px; transition:.2s; }
+.notif-item.unread { border-color:rgba(0,212,255,0.2); background:rgba(0,212,255,0.03); }
+.notif-item:hover { border-color:var(--border2); }
+.notif-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.notif-content .title { font-size:14px; font-weight:600; margin-bottom:4px; }
+.notif-content .msg { font-size:13px; color:var(--text2); }
+.notif-content .time { font-size:11px; color:var(--text3); margin-top:6px; }
+
+/* PROFILE */
+.profile-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:28px; margin-bottom:20px; }
+.profile-header { display:flex; align-items:center; gap:20px; margin-bottom:24px; }
+.profile-avatar { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--purple)); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:#000; }
+.profile-header h3 { font-size:20px; font-weight:700; }
+.profile-header p { font-size:14px; color:var(--text2); margin-top:2px; }
+.plan-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.2); color:var(--accent); font-size:12px; padding:4px 10px; border-radius:100px; margin-top:6px; }
+
+/* COINS */
+.coins-display { background:linear-gradient(135deg,rgba(0,212,255,0.1),rgba(124,77,255,0.1)); border:1px solid rgba(0,212,255,0.2); border-radius:16px; padding:24px; text-align:center; margin-bottom:20px; }
+.coins-display .big-num { font-family:'Syne',sans-serif; font-size:56px; font-weight:800; color:var(--yellow); }
+.coins-display p { color:var(--text2); font-size:14px; margin-top:4px; }
+
+/* DOCS */
+.docs-layout { display:grid; grid-template-columns:200px 1fr; gap:24px; }
+.docs-nav { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; height:fit-content; position:sticky; top:20px; }
+.docs-nav a { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; color:var(--text2); text-decoration:none; font-size:13px; cursor:pointer; transition:.2s; }
+.docs-nav a:hover, .docs-nav a.active { background:rgba(0,212,255,0.1); color:var(--accent); }
+.docs-content { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px; }
+.docs-content h2 { font-size:24px; margin-bottom:12px; }
+.docs-content h3 { font-size:16px; margin:24px 0 10px; color:var(--accent); }
+.docs-content p { font-size:14px; color:var(--text2); line-height:1.8; margin-bottom:14px; }
+.code-block { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:16px; font-family:monospace; font-size:13px; color:var(--green); overflow-x:auto; margin:12px 0; }
+
+/* SUPPORT */
+.support-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin-bottom:28px; }
+.support-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px; text-align:center; transition:.2s; cursor:pointer; }
+.support-card:hover { border-color:var(--accent); transform:translateY(-3px); }
+.support-card i { font-size:28px; color:var(--accent); margin-bottom:12px; display:block; }
+.support-card h3 { font-size:15px; margin-bottom:6px; }
+.support-card p { font-size:13px; color:var(--text2); }
+
+/* ADD BOT */
+.add-bot-form { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:28px; max-width:560px; }
+.phone-input-wrap { display:flex; gap:0; }
+.flag-select { background:var(--bg); border:1px solid var(--border); border-radius:10px 0 0 10px; border-right:none; padding:12px 14px; color:var(--text); font-family:inherit; font-size:14px; outline:none; }
+.phone-input-wrap input { border-radius:0 10px 10px 0; }
+
+/* ADMIN PANEL */
+.admin-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+.admin-stat { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px; }
+.admin-stat .val { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; }
+.admin-stat .lbl { font-size:12px; color:var(--text2); margin-top:4px; }
+.users-table { width:100%; border-collapse:collapse; }
+.users-table th { text-align:left; font-size:12px; color:var(--text3); padding:10px 14px; border-bottom:1px solid var(--border); text-transform:uppercase; letter-spacing:.5px; }
+.users-table td { padding:12px 14px; font-size:13px; border-bottom:1px solid var(--border); }
+.users-table tr:hover td { background:rgba(255,255,255,0.02); }
+
+/* REAL-TIME ANIMATION */
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.5; } }
+.live-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; margin-right:5px; }
+
+/* =================== ANIMATION SYSTEM =================== */
+
+/* --- Scroll Reveal --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-left { opacity:0; transform:translateX(-50px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+.reveal-left.visible { opacity:1; transform:translateX(0); }
+.reveal-right { opacity:0; transform:translateX(50px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+.reveal-right.visible { opacity:1; transform:translateX(0); }
+.reveal-scale { opacity:0; transform:scale(0.85); transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+.reveal-scale.visible { opacity:1; transform:scale(1); }
+
+/* Stagger delays */
+.d1 { transition-delay: 0.05s; }
+.d2 { transition-delay: 0.12s; }
+.d3 { transition-delay: 0.19s; }
+.d4 { transition-delay: 0.26s; }
+.d5 { transition-delay: 0.33s; }
+.d6 { transition-delay: 0.40s; }
+
+/* --- Hero Animations --- */
+@keyframes heroFloat {
+  0%,100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes heroPulseRing {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes gradientShift {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes borderFlow {
+  0% { border-color: rgba(0,212,255,0.2); }
+  50% { border-color: rgba(124,77,255,0.4); }
+  100% { border-color: rgba(0,212,255,0.2); }
+}
+@keyframes textGlitch {
+  0%,95%,100% { clip-path: none; transform: none; }
+  96% { clip-path: inset(20% 0 30% 0); transform: translateX(-3px); }
+  97% { clip-path: inset(50% 0 10% 0); transform: translateX(3px); }
+  98% { clip-path: inset(10% 0 60% 0); transform: translateX(-2px); }
+}
+@keyframes scanLine {
+  0% { top: -10%; }
+  100% { top: 110%; }
+}
+@keyframes floatOrb {
+  0%,100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.97); }
+}
+@keyframes orbPulse {
+  0%,100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+@keyframes typeIn {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes blinkCursor {
+  0%,100% { border-color: var(--accent); }
+  50% { border-color: transparent; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes dashDraw {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes coinSpin {
+  0%,100% { transform: rotateY(0deg); }
+  50% { transform: rotateY(180deg); }
+}
+@keyframes numberRoll {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes navGlow {
+  0%,100% { box-shadow: none; }
+  50% { box-shadow: 0 0 20px rgba(0,212,255,0.15); }
+}
+@keyframes glowPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(0,212,255,0); }
+}
+@keyframes waveX {
+  0%,100% { transform: translateX(0); }
+  50% { transform: translateX(6px); }
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* --- Ambient Background Orbs --- */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: floatOrb 12s ease-in-out infinite, orbPulse 8s ease-in-out infinite;
+}
+.orb-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(0,212,255,0.12), transparent 70%);
+  top: -100px; left: -100px;
+  animation-duration: 15s, 10s;
+}
+.orb-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(124,77,255,0.1), transparent 70%);
+  bottom: -50px; right: -80px;
+  animation-duration: 18s, 12s;
+  animation-delay: -5s, -3s;
+}
+.orb-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(0,230,118,0.06), transparent 70%);
+  top: 50%; left: 40%;
+  animation-duration: 20s, 14s;
+  animation-delay: -8s, -6s;
+}
+
+/* --- Grid Background --- */
+.grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(30,45,69,0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,45,69,0.3) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+}
+
+/* --- Scan Line Effect --- */
+.scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent);
+  animation: scanLine 6s linear infinite;
+  pointer-events: none;
+}
+
+/* --- Hero Badge Animation --- */
+.hero-badge {
+  animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.2s both;
+}
+.hero-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+  vertical-align: middle;
+}
+
+/* --- Hero h1 word animation --- */
+.hero-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* --- Animated gradient text --- */
+.grad-text {
+  background: linear-gradient(135deg, var(--accent), var(--purple), var(--accent), #00ff88);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
+}
+
+/* --- Button Hover Ripple --- */
+.btn-primary { position: relative; overflow: hidden; }
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  transform: translateX(-100%) skewX(-15deg);
+  transition: transform 0.4s ease;
+}
+.btn-primary:hover::after { transform: translateX(100%) skewX(-15deg); }
+
+/* --- Magnetic Button Effect --- */
+.btn-mag { transition: transform 0.2s cubic-bezier(0.23,1,0.32,1), box-shadow 0.2s ease; }
+
+/* --- Feature Card Glow on Hover --- */
+.feature-card {
+  position: relative;
+  overflow: hidden;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border-radius: 17px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+.feature-card:hover::before { opacity: 0.15; }
+.feature-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+.feature-card:hover::after { left: 130%; }
+
+/* --- Plan Card Shimmer --- */
+.plan-card {
+  background: linear-gradient(135deg, var(--card), var(--card2));
+  background-size: 200% 200%;
+  position: relative;
+  overflow: hidden;
+}
+.plan-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+  transition: left 0.6s ease;
+  transform: skewX(-15deg);
+}
+.plan-card:hover::after { left: 150%; }
+.plan-card.popular {
+  animation: borderFlow 4s ease infinite;
+}
+
+/* --- Coin Icon Float --- */
+.coin-card { transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), border-color 0.3s, box-shadow 0.3s; }
+.coin-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+.coin-card .coin-icon { display: block; animation: coinSpin 4s ease-in-out infinite; }
+.coin-card:hover .coin-icon { animation-duration: 0.8s; }
+
+/* --- Step Number Pulse --- */
+.step-num {
+  position: relative;
+  transition: all 0.3s ease;
+}
+.step-num::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  animation: heroPulseRing 3s ease-out infinite;
+}
+.step:hover .step-num { border-color: var(--accent); background: rgba(0,212,255,0.1); }
+
+/* --- Navbar Scroll Effect --- */
+nav.scrolled {
+  background: rgba(8,11,18,0.95);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+  animation: navGlow 3s ease infinite;
+}
+.nav-links a {
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 0;
+  width: 0; height: 1.5px;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+.nav-links a:hover::after { width: 100%; }
+.nav-logo { transition: transform 0.3s ease; }
+.nav-logo:hover { transform: scale(1.05); }
+
+/* --- Logo Icon Spin on Hover --- */
+.logo-icon {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.logo-icon:hover, .nav-logo:hover .logo-icon { transform: rotate(15deg) scale(1.1); }
+
+/* --- Dashboard Page Transition --- */
+.dash-page.active {
+  animation: pageIn 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* --- Stat Card Counter Animation --- */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+.stat-card:hover::before { transform: scaleX(1); }
+
+/* --- Nav Item Slide --- */
+.nav-item {
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.nav-item:hover { transform: translateX(4px); }
+.nav-item i {
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.nav-item:hover i { transform: scale(1.2); }
+
+/* --- Sidebar Logo Pulse --- */
+.sidebar-logo .logo-icon {
+  animation: glowPulse 3s ease infinite;
+}
+
+/* --- Bot Card Animation --- */
+.bot-card {
+  animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+.bot-card:hover {
+  transform: translateX(4px);
+}
+.bot-avatar {
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.bot-card:hover .bot-avatar { transform: scale(1.1) rotate(5deg); }
+
+/* --- Status dot pulse for online --- */
+.status-dot.online {
+  animation: pulse 2s infinite;
+}
+
+/* --- Notification item slide in --- */
+.notif-item {
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.notif-item:hover { transform: translateX(4px); }
+
+/* --- Support card tilt --- */
+.support-card {
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), border-color 0.3s, box-shadow 0.3s;
+}
+.support-card:hover {
+  transform: translateY(-6px) rotate(-1deg);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+.support-card i {
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.support-card:hover i { transform: scale(1.2) rotate(-5deg); }
+
+/* --- Scrollbar custom track glow --- */
+::-webkit-scrollbar-thumb:hover { background: var(--accent2); }
+
+/* --- Typing cursor on hero --- */
+.typing-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: var(--accent);
+  vertical-align: middle;
+  margin-left: 4px;
+  animation: blinkCursor 0.8s step-end infinite;
+  border-radius: 1px;
+}
+
+/* --- Ticker tape in hero stats --- */
+.hero-stat .num {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.hero-stat:hover .num { transform: scale(1.1); color: var(--text); }
+
+/* --- Footer link arrow --- */
+.footer-col a {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.footer-col a::before {
+  content: '→';
+  color: var(--accent);
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all 0.2s ease;
+  margin-right: 0;
+  width: 0;
+  overflow: hidden;
+}
+.footer-col a:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+  width: 18px;
+  margin-right: 4px;
+}
+
+/* --- Smooth number update in stats --- */
+@keyframes numPop {
+  0% { transform: scale(1.3); color: var(--accent); }
+  100% { transform: scale(1); }
+}
+.num-pop { animation: numPop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* --- Section divider line animation --- */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+/* --- Glow button focus --- */
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* --- RESPONSIVE --- */
+/* RESPONSIVE */
+@media(max-width:900px) {
+  nav { padding:14px 20px; }
+  .nav-links { display:none; }
+  .hamburger { display:flex; }
+  .hero { padding:120px 20px 60px; }
+  .section { padding:60px 20px; }
+  .features-grid { grid-template-columns:1fr 1fr; }
+  .footer-grid { grid-template-columns:1fr 1fr; }
+  .sidebar { transform:translateX(-260px); }
+  .sidebar.open { transform:translateX(0); }
+  .dash-main { margin-left:0; padding:16px; }
+  .menu-toggle { display:flex!important; }
+  .docs-layout { grid-template-columns:1fr; }
+  .dash-layout { grid-template-columns:1fr; }
+}
+@media(max-width:600px) {
+  .features-grid { grid-template-columns:1fr; }
+  .hero h1 { font-size:36px; }
+  .footer-grid { grid-template-columns:1fr; }
+  .hero-stats { gap:24px; }
+  .steps { flex-direction:column; }
+  .step:not(:last-child)::after { display:none; }
+  .nav-actions .btn { display:none; }
+  .pricing-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- =================== LANDING PAGE =================== -->
+<div id="landing">
+  <nav>
+    <div class="nav-logo">
+      <div class="logo-icon"><i class="fa-brands fa-whatsapp" style="color:#000"></i></div>
+      NexHost
+    </div>
+    <div class="nav-links">
+      <a onclick="scrollSection('features')">Features</a>
+      <a onclick="scrollSection('pricing')">Pricing</a>
+      <a onclick="scrollSection('coins')">Coins</a>
+      <a onclick="scrollSection('how')">How It Works</a>
+      <a onclick="openSupport()">Support</a>
+      <a onclick="scrollSection('docs')">Docs</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-outline" onclick="showModal('login')">Login</button>
+      <button class="btn btn-primary" onclick="showModal('signup')">Get Started</button>
+      <div class="hamburger" onclick="toggleMobileNav()">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+  <div class="mobile-nav" id="mobileNav">
+    <a onclick="scrollSection('features');toggleMobileNav()">Features</a>
+    <a onclick="scrollSection('pricing');toggleMobileNav()">Pricing</a>
+    <a onclick="scrollSection('coins');toggleMobileNav()">Coins</a>
+    <a onclick="scrollSection('how');toggleMobileNav()">How It Works</a>
+    <a onclick="openSupport();toggleMobileNav()">Support</a>
+    <a onclick="showModal('login')">Login</a>
+    <a onclick="showModal('signup')">Sign Up Free</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero" id="hero" style="position:relative;overflow:hidden;">
+    <div class="grid-bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="scan-line"></div>
+    <div class="hero-badge" style="position:relative;z-index:1"><i class="fa-solid fa-bolt"></i> The #1 WhatsApp Bot Hosting Platform</div>
+    <h1 id="hero-h1" style="position:relative;z-index:1">
+      <span class="hero-word" style="animation-delay:0.3s">Host </span>
+      <span class="hero-word" style="animation-delay:0.4s">Your </span>
+      <span class="hero-word grad-text" style="animation-delay:0.5s">WhatsApp </span>
+      <span class="hero-word grad-text" style="animation-delay:0.6s">Bots</span>
+      <br>
+      <span class="hero-word" style="animation-delay:0.7s">With </span>
+      <span class="hero-word" style="animation-delay:0.8s">Zero </span>
+      <span class="hero-word" style="animation-delay:0.9s">Hassle</span>
+    </h1>
+    <p style="position:relative;z-index:1;opacity:0;animation:fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 1s both">Deploy, manage, and scale your WhatsApp bots on NexHost. Pay with coins, get real-time stats, and keep your bots running 24/7.</p>
+    <div class="hero-actions" style="position:relative;z-index:1;opacity:0;animation:fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 1.1s both">
+      <button class="btn btn-primary btn-mag" onclick="showModal('signup')"><i class="fa-solid fa-rocket"></i> Start Free — 10 Coins</button>
+      <button class="btn btn-outline btn-mag" onclick="scrollSection('how')"><i class="fa-solid fa-play"></i> See How It Works</button>
+    </div>
+    <div class="hero-stats" style="position:relative;z-index:1;opacity:0;animation:fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 1.3s both">
+      <div class="hero-stat"><div class="num" id="counter1">0</div><div class="lbl">Active Bots</div></div>
+      <div class="hero-stat"><div class="num" id="counter2">0</div><div class="lbl">Users</div></div>
+      <div class="hero-stat"><div class="num" id="counter3">99.9%</div><div class="lbl">Uptime</div></div>
+      <div class="hero-stat"><div class="num" id="counter4">0</div><div class="lbl">Messages/Day</div></div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features" style="position:relative;overflow:hidden;">
+    <div class="section-header reveal">
+      <div class="chip"><i class="fa-solid fa-star"></i> Features</div>
+      <h2>Everything You Need to<br>Run WhatsApp Bots</h2>
+      <p>From real-time monitoring to seamless deployment — NexHost has it all.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal d1">
+        <div class="feature-icon" style="background:rgba(0,212,255,0.1);color:var(--accent)"><i class="fa-brands fa-whatsapp"></i></div>
+        <h3>Multi-Bot Support</h3>
+        <p>Run multiple WhatsApp bot numbers on a single dashboard. Add bots with any country code.</p>
+      </div>
+      <div class="feature-card reveal d2">
+        <div class="feature-icon" style="background:rgba(0,230,118,0.1);color:var(--green)"><i class="fa-solid fa-chart-line"></i></div>
+        <h3>Real-Time Analytics</h3>
+        <p>Monitor your bot's performance live — message counts, uptime, response rates and more.</p>
+      </div>
+      <div class="feature-card reveal d3">
+        <div class="feature-icon" style="background:rgba(124,77,255,0.1);color:var(--purple)"><i class="fa-solid fa-coins"></i></div>
+        <h3>Coin Economy</h3>
+        <p>Use coins to host bots. Get 10 free starter coins. Buy more anytime — $1 for 40 coins.</p>
+      </div>
+      <div class="feature-card reveal d4">
+        <div class="feature-icon" style="background:rgba(255,214,0,0.1);color:var(--yellow)"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3>Always On, 24/7</h3>
+        <p>Your bots run continuously with high-availability infrastructure and automatic restarts.</p>
+      </div>
+      <div class="feature-card reveal d5">
+        <div class="feature-icon" style="background:rgba(255,71,87,0.1);color:var(--red)"><i class="fa-solid fa-bell"></i></div>
+        <h3>Smart Notifications</h3>
+        <p>Get alerted when a bot goes offline, your coins are low, or something needs your attention.</p>
+      </div>
+      <div class="feature-card reveal d6">
+        <div class="feature-icon" style="background:rgba(0,212,255,0.1);color:var(--accent)"><i class="fa-solid fa-globe"></i></div>
+        <h3>Global Numbers</h3>
+        <p>Support for any WhatsApp number globally. Add numbers with full international country codes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="background:var(--bg2);position:relative;overflow:hidden;">
+    <div class="orb" style="width:300px;height:300px;background:radial-gradient(circle,rgba(124,77,255,0.08),transparent 70%);top:-100px;right:-50px;animation-duration:20s"></div>
+    <div class="section-header reveal">
+      <div class="chip"><i class="fa-solid fa-tag"></i> Pricing</div>
+      <h2>Simple, Coin-Based Pricing</h2>
+      <p>Choose a plan for your bot. Pay with coins from your wallet balance.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="plan-card reveal-left d1">
+        <div class="plan-name">🆓 Starter</div>
+        <div class="plan-price">0 <span>coins/day</span></div>
+        <div class="plan-desc">Perfect to get started with your first bot.</div>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i> 1 WhatsApp Bot</li>
+          <li><i class="fa-solid fa-check"></i> 500 Messages/Day</li>
+          <li><i class="fa-solid fa-check"></i> Basic Analytics</li>
+          <li><i class="fa-solid fa-check"></i> 10 Free Starter Coins</li>
+          <li class="no"><i class="fa-solid fa-xmark"></i> Priority Support</li>
+          <li class="no"><i class="fa-solid fa-xmark"></i> Custom Commands</li>
+        </ul>
+        <button class="btn btn-outline btn-block btn-mag" onclick="showModal('signup')">Get Started Free</button>
+      </div>
+      <div class="plan-card popular reveal d2">
+        <div class="plan-name">⚡ Basic</div>
+        <div class="plan-price">2 <span>coins/day</span></div>
+        <div class="plan-desc">For active bots needing more power.</div>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i> 3 WhatsApp Bots</li>
+          <li><i class="fa-solid fa-check"></i> 5,000 Messages/Day</li>
+          <li><i class="fa-solid fa-check"></i> Full Analytics</li>
+          <li><i class="fa-solid fa-check"></i> Priority Support</li>
+          <li><i class="fa-solid fa-check"></i> Custom Commands</li>
+          <li class="no"><i class="fa-solid fa-xmark"></i> Dedicated Resources</li>
+        </ul>
+        <button class="btn btn-primary btn-block btn-mag" onclick="showModal('signup')">Choose Basic</button>
+      </div>
+      <div class="plan-card reveal-right d3">
+        <div class="plan-name">🚀 Pro</div>
+        <div class="plan-price">5 <span>coins/day</span></div>
+        <div class="plan-desc">Maximum performance for power users.</div>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i> Unlimited Bots</li>
+          <li><i class="fa-solid fa-check"></i> Unlimited Messages</li>
+          <li><i class="fa-solid fa-check"></i> Advanced Analytics</li>
+          <li><i class="fa-solid fa-check"></i> 24/7 Priority Support</li>
+          <li><i class="fa-solid fa-check"></i> Custom Commands</li>
+          <li><i class="fa-solid fa-check"></i> Dedicated Resources</li>
+        </ul>
+        <button class="btn btn-outline btn-block btn-mag" onclick="showModal('signup')">Choose Pro</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- COINS -->
+  <section class="section" id="coins" style="position:relative;overflow:hidden;">
+    <div class="orb" style="width:350px;height:350px;background:radial-gradient(circle,rgba(255,214,0,0.06),transparent 70%);bottom:-100px;left:10%;animation-duration:16s"></div>
+    <div class="section-header reveal">
+      <div class="chip"><i class="fa-solid fa-coins"></i> Coin Packs</div>
+      <h2>Buy Coins, Host More Bots</h2>
+      <p>New users get 10 coins free. Need more? Grab a pack below.</p>
+    </div>
+    <div class="coins-grid">
+      <div class="coin-card reveal d1">
+        <div class="coin-icon">🎁</div>
+        <div class="coin-amount">10</div>
+        <div class="coin-price">Free</div>
+        <div class="coin-badge">Starter Bonus</div>
+      </div>
+      <div class="coin-card reveal d2">
+        <div class="coin-icon">🪙</div>
+        <div class="coin-amount">40</div>
+        <div class="coin-price">$1.00</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px;">$0.025 / coin</div>
+      </div>
+      <div class="coin-card featured reveal d3">
+        <div class="coin-icon">💎</div>
+        <div class="coin-amount">100</div>
+        <div class="coin-price">$2.00</div>
+        <div class="coin-badge">Best Value — 25% off</div>
+      </div>
+      <div class="coin-card reveal d4">
+        <div class="coin-icon">👑</div>
+        <div class="coin-amount">300</div>
+        <div class="coin-price">$5.00</div>
+        <div class="coin-badge">Mega Pack — 37% off</div>
+      </div>
+    </div>
+    <p class="reveal" style="text-align:center;margin-top:24px;font-size:13px;color:var(--text3);">Buy coins inside your dashboard wallet. Secure checkout via Stripe.</p>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" style="background:var(--bg2);position:relative;overflow:hidden;">
+    <div class="section-header reveal">
+      <div class="chip"><i class="fa-solid fa-list-check"></i> How It Works</div>
+      <h2>Up and Running in Minutes</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal d1">
+        <div class="step-num">1</div>
+        <h3>Create Account</h3>
+        <p>Sign up free and get 10 starter coins automatically credited.</p>
+      </div>
+      <div class="step reveal d2">
+        <div class="step-num">2</div>
+        <h3>Add Your Bot</h3>
+        <p>Enter your WhatsApp number with country code (e.g. +2348056473526).</p>
+      </div>
+      <div class="step reveal d3">
+        <div class="step-num">3</div>
+        <h3>Choose a Plan</h3>
+        <p>Pick Starter (free), Basic, or Pro — coins deducted automatically.</p>
+      </div>
+      <div class="step reveal d4">
+        <div class="step-num">4</div>
+        <h3>Go Live!</h3>
+        <p>Your bot is hosted 24/7. Monitor it live from your dashboard.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOCS SECTION -->
+  <section class="section" id="docs">
+    <div class="section-header">
+      <div class="chip"><i class="fa-solid fa-book"></i> Documentation</div>
+      <h2>Quick Start Guide</h2>
+      <p>Everything you need to get your first WhatsApp bot running.</p>
+    </div>
+    <div style="max-width:800px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;">
+      <h3 style="font-size:18px;margin-bottom:16px;color:var(--accent)"><i class="fa-solid fa-terminal"></i> Adding Your Bot Number</h3>
+      <p style="color:var(--text2);font-size:14px;line-height:1.8;margin-bottom:12px;">Your WhatsApp bot number must be entered with the full international format including country code, without the + sign:</p>
+      <div class="code-block">✅ Correct: 2348056473526<br>✅ Correct: 447911123456<br>❌ Wrong: 08056473526 (no country code)<br>❌ Wrong: +2348056473526 (remove the +)</div>
+      <h3 style="font-size:18px;margin:24px 0 12px;color:var(--accent)"><i class="fa-solid fa-coins"></i> Coin Usage</h3>
+      <p style="color:var(--text2);font-size:14px;line-height:1.8;margin-bottom:12px;">Coins are deducted daily based on your bot's plan. If your balance hits zero, bots on paid plans will pause until recharged.</p>
+      <div class="code-block">Starter: 0 coins/day<br>Basic:   2 coins/day per bot<br>Pro:     5 coins/day per bot</div>
+      <div style="margin-top:20px;text-align:center;">
+        <button class="btn btn-primary" onclick="showModal('signup')"><i class="fa-solid fa-rocket"></i> Start Hosting Now</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo"><div class="logo-icon"><i class="fa-brands fa-whatsapp" style="color:#000"></i></div>NexHost</div>
+        <p>The #1 platform for hosting and managing WhatsApp bots. Simple, reliable, and powered by coins.</p>
+        <div class="socials" style="margin-top:16px;">
+          <a><i class="fa-brands fa-twitter"></i></a>
+          <a><i class="fa-brands fa-discord"></i></a>
+          <a><i class="fa-brands fa-github"></i></a>
+          <a><i class="fa-brands fa-telegram"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a onclick="scrollSection('features')">Features</a>
+        <a onclick="scrollSection('pricing')">Pricing</a>
+        <a onclick="scrollSection('coins')">Coins</a>
+        <a onclick="scrollSection('docs')">Documentation</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a>About Us</a>
+        <a>Blog</a>
+        <a>Careers</a>
+        <a>Press</a>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <a>Help Center</a>
+        <a>Discord Server</a>
+        <a>Contact Us</a>
+        <a>Status Page</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 NexHost. All rights reserved.</p>
+      <p style="color:var(--text3);font-size:12px;">Privacy Policy · Terms of Service</p>
+    </div>
+  </footer>
+</div>
+
+<!-- =================== DASHBOARD =================== -->
+<div id="dashboard">
+  <div class="dash-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon"><i class="fa-brands fa-whatsapp" style="color:#000"></i></div>
+        <span>NexHost</span>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">Main</div>
+        <div class="nav-item active" onclick="showPage('overview')">
+          <i class="fa-solid fa-house"></i> Overview
+        </div>
+        <div class="nav-item" onclick="showPage('bots')">
+          <i class="fa-brands fa-whatsapp"></i> My Bots
+          <span class="nav-badge" id="bot-count-badge">0</span>
+        </div>
+        <div class="nav-item" onclick="showPage('add-bot')">
+          <i class="fa-solid fa-plus"></i> Add Bot
+        </div>
+        <div class="nav-item" onclick="showPage('stats')">
+          <i class="fa-solid fa-chart-bar"></i> Statistics
+        </div>
+        <div class="sidebar-section">Account</div>
+        <div class="nav-item" onclick="showPage('wallet')">
+          <i class="fa-solid fa-coins"></i> Wallet
+        </div>
+        <div class="nav-item" onclick="showPage('notifications')">
+          <i class="fa-solid fa-bell"></i> Notifications
+          <span class="nav-badge" id="notif-badge">3</span>
+        </div>
+        <div class="nav-item" onclick="showPage('profile')">
+          <i class="fa-solid fa-user"></i> Profile
+        </div>
+        <div class="sidebar-section">Help</div>
+        <div class="nav-item" onclick="showPage('docs')">
+          <i class="fa-solid fa-book"></i> Documentation
+        </div>
+        <div class="nav-item" onclick="showPage('support')">
+          <i class="fa-solid fa-headset"></i> Support
+        </div>
+        <div id="admin-nav" style="display:none">
+          <div class="sidebar-section">Admin</div>
+          <div class="nav-item" onclick="showPage('admin')" style="color:var(--yellow)">
+            <i class="fa-solid fa-crown"></i> Admin Panel
+          </div>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="avatar" id="sidebar-avatar">U</div>
+          <div class="user-info">
+            <div class="name" id="sidebar-name">User</div>
+            <div class="plan" id="sidebar-plan">Starter</div>
+          </div>
+          <i class="fa-solid fa-right-from-bracket" style="color:var(--text3);cursor:pointer;margin-left:auto;font-size:14px" onclick="logout()" title="Logout"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-main">
+      <div class="dash-header">
+        <div class="dash-title">
+          <h2 id="page-title">Overview</h2>
+          <p id="page-sub">Welcome back! Here's your dashboard.</p>
+        </div>
+        <div class="dash-header-actions">
+          <button class="btn btn-ghost btn-sm menu-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+          <div class="notif-btn" onclick="showPage('notifications')">
+            <i class="fa-solid fa-bell"></i>
+            <div class="notif-dot" id="notif-dot"></div>
+          </div>
+          <div class="user-pill" style="cursor:pointer" onclick="showPage('profile')">
+            <div class="avatar" id="header-avatar">U</div>
+            <div class="user-info" style="display:none" id="header-user">
+              <div class="name" id="header-name">User</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OVERVIEW PAGE -->
+      <div class="dash-page active" id="page-overview">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="label"><i class="fa-brands fa-whatsapp" style="color:var(--green)"></i> Active Bots</div>
+            <div class="value" id="stat-bots">0</div>
+            <div class="change up"><i class="fa-solid fa-arrow-up"></i> Live now</div>
+          </div>
+          <div class="stat-card">
+            <div class="label"><i class="fa-solid fa-coins" style="color:var(--yellow)"></i> Coin Balance</div>
+            <div class="value" id="stat-coins">10</div>
+            <div class="change up"><i class="fa-solid fa-gift"></i> Starter bonus</div>
+          </div>
+          <div class="stat-card">
+            <div class="label"><i class="fa-solid fa-message" style="color:var(--accent)"></i> Messages Today</div>
+            <div class="value" id="stat-msgs">0</div>
+            <div class="change up"><span class="live-dot"></span> Live</div>
+          </div>
+          <div class="stat-card">
+            <div class="label"><i class="fa-solid fa-clock" style="color:var(--purple)"></i> Uptime</div>
+            <div class="value">99.9%</div>
+            <div class="change up"><i class="fa-solid fa-check"></i> All systems OK</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex-wrap:wrap;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;min-width:0">
+            <h3 style="font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-bolt" style="color:var(--accent)"></i> Quick Actions</h3>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <button class="btn btn-primary btn-sm" onclick="showPage('add-bot')"><i class="fa-solid fa-plus"></i> Add New Bot</button>
+              <button class="btn btn-ghost btn-sm" onclick="showPage('wallet')"><i class="fa-solid fa-coins"></i> Buy Coins</button>
+              <button class="btn btn-ghost btn-sm" onclick="showPage('docs')"><i class="fa-solid fa-book"></i> Documentation</button>
+            </div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;min-width:0">
+            <h3 style="font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-bell" style="color:var(--yellow)"></i> Recent Activity</h3>
+            <div id="activity-list" style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text2);">
+              <p>No activity yet. Add your first bot!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTS PAGE -->
+      <div class="dash-page" id="page-bots">
+        <div class="bots-header">
+          <p style="font-size:14px;color:var(--text2);" id="bots-count-label">0 bots registered</p>
+          <button class="btn btn-primary btn-sm" onclick="showPage('add-bot')"><i class="fa-solid fa-plus"></i> Add Bot</button>
+        </div>
+        <div id="bots-list">
+          <div style="background:var(--card);border:1px dashed var(--border2);border-radius:14px;padding:40px;text-align:center;color:var(--text2)">
+            <i class="fa-brands fa-whatsapp" style="font-size:36px;color:var(--text3);display:block;margin-bottom:12px"></i>
+            <p>No bots yet. Add your first WhatsApp bot!</p>
+            <button class="btn btn-primary btn-sm" style="margin-top:16px" onclick="showPage('add-bot')"><i class="fa-solid fa-plus"></i> Add Bot</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD BOT PAGE -->
+      <div class="dash-page" id="page-add-bot">
+        <div class="add-bot-form">
+          <h3 style="font-size:18px;margin-bottom:6px"><i class="fa-brands fa-whatsapp" style="color:var(--green)"></i> Add New WhatsApp Bot</h3>
+          <p style="color:var(--text2);font-size:13px;margin-bottom:24px">Enter your WhatsApp number with country code. No spaces, no + sign.</p>
+          <div class="form-group">
+            <label>Bot Nickname (optional)</label>
+            <input type="text" id="bot-nick" placeholder="e.g. My Store Bot">
+          </div>
+          <div class="form-group">
+            <label>WhatsApp Number with Country Code</label>
+            <div class="phone-input-wrap">
+              <select class="flag-select" id="country-code">
+                <option value="234">🇳🇬 +234</option>
+                <option value="1">🇺🇸 +1</option>
+                <option value="44">🇬🇧 +44</option>
+                <option value="27">🇿🇦 +27</option>
+                <option value="233">🇬🇭 +233</option>
+                <option value="254">🇰🇪 +254</option>
+                <option value="255">🇹🇿 +255</option>
+                <option value="256">🇺🇬 +256</option>
+                <option value="91">🇮🇳 +91</option>
+                <option value="49">🇩🇪 +49</option>
+                <option value="33">🇫🇷 +33</option>
+                <option value="86">🇨🇳 +86</option>
+                <option value="55">🇧🇷 +55</option>
+                <option value="7">🇷🇺 +7</option>
+                <option value="966">🇸🇦 +966</option>
+                <option value="971">🇦🇪 +971</option>
+              </select>
+              <input type="text" id="bot-number" placeholder="8056473526" style="border-radius:0 10px 10px 0">
+            </div>
+            <div style="font-size:12px;color:var(--text3);margin-top:6px"><i class="fa-solid fa-circle-info"></i> Full number example: 2348056473526</div>
+          </div>
+          <div class="form-group">
+            <label>Bot Plan</label>
+            <select id="bot-plan">
+              <option value="starter">🆓 Starter (0 coins/day)</option>
+              <option value="basic">⚡ Basic (2 coins/day)</option>
+              <option value="pro">🚀 Pro (5 coins/day)</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="addBot()"><i class="fa-solid fa-plus"></i> Register Bot</button>
+        </div>
+      </div>
+
+      <!-- STATS PAGE -->
+      <div class="dash-page" id="page-stats">
+        <div class="stats-grid" style="margin-bottom:24px">
+          <div class="stat-card">
+            <div class="label"><span class="live-dot"></span> Live Messages</div>
+            <div class="value" id="live-msgs">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="label"><i class="fa-solid fa-clock" style="color:var(--accent)"></i> Response Time</div>
+            <div class="value">~120ms</div>
+          </div>
+          <div class="stat-card">
+            <div class="label"><i class="fa-solid fa-server" style="color:var(--purple)"></i> Server Load</div>
+            <div class="value" id="server-load">0%</div>
+          </div>
+          <div class="stat-card">
+            <div class="label"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Uptime</div>
+            <div class="value">99.9%</div>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;">
+          <h3 style="font-size:15px;margin-bottom:20px"><i class="fa-solid fa-chart-area" style="color:var(--accent)"></i> Message Activity (Real-Time)</h3>
+          <canvas id="statsChart" style="width:100%;max-height:200px"></canvas>
+          <div style="margin-top:16px;display:flex;gap:16px;flex-wrap:wrap">
+            <div style="font-size:13px;color:var(--text2)"><span style="color:var(--green)">●</span> Messages Sent</div>
+            <div style="font-size:13px;color:var(--text2)"><span style="color:var(--accent)">●</span> Messages Received</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WALLET PAGE -->
+      <div class="dash-page" id="page-wallet">
+        <div class="coins-display">
+          <div class="big-num" id="wallet-coins">10</div>
+          <p><i class="fa-solid fa-coins"></i> Your Coin Balance</p>
+        </div>
+        <h3 style="font-size:16px;margin-bottom:16px">Buy Coin Packs</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px">
+          <div class="coin-card" onclick="buyCoin(40,1)">
+            <div class="coin-icon">🪙</div>
+            <div class="coin-amount">40 Coins</div>
+            <div class="coin-price">$1.00</div>
+          </div>
+          <div class="coin-card featured" onclick="buyCoin(100,2)">
+            <div class="coin-icon">💎</div>
+            <div class="coin-amount">100 Coins</div>
+            <div class="coin-price">$2.00</div>
+            <div class="coin-badge">Best Value</div>
+          </div>
+          <div class="coin-card" onclick="buyCoin(300,5)">
+            <div class="coin-icon">👑</div>
+            <div class="coin-amount">300 Coins</div>
+            <div class="coin-price">$5.00</div>
+            <div class="coin-badge">Mega Pack</div>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px">
+          <h3 style="font-size:15px;margin-bottom:12px"><i class="fa-solid fa-list" style="color:var(--accent)"></i> Transaction History</h3>
+          <div id="tx-list">
+            <div style="font-size:13px;color:var(--text3);padding:12px 0">🎁 Welcome bonus: +10 coins credited</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS PAGE -->
+      <div class="dash-page" id="page-notifications">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <p style="font-size:14px;color:var(--text2)">Your recent notifications</p>
+          <button class="btn btn-ghost btn-sm" onclick="clearNotifs()"><i class="fa-solid fa-check-double"></i> Mark All Read</button>
+        </div>
+        <div class="notif-list" id="notif-list">
+          <div class="notif-item unread">
+            <div class="notif-icon" style="background:rgba(0,230,118,0.1)"><i class="fa-solid fa-gift" style="color:var(--green)"></i></div>
+            <div class="notif-content">
+              <div class="title">Welcome to NexHost! 🎉</div>
+              <div class="msg">You've received 10 free starter coins. Add your first bot to get started!</div>
+              <div class="time">Just now</div>
+            </div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-icon" style="background:rgba(0,212,255,0.1)"><i class="fa-solid fa-circle-info" style="color:var(--accent)"></i></div>
+            <div class="notif-content">
+              <div class="title">Documentation Available</div>
+              <div class="msg">Check out our docs to learn how to add bots and use coin packs effectively.</div>
+              <div class="time">2 minutes ago</div>
+            </div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-icon" style="background:rgba(255,214,0,0.1)"><i class="fa-solid fa-star" style="color:var(--yellow)"></i></div>
+            <div class="notif-content">
+              <div class="title">Pro Tip</div>
+              <div class="msg">Buy the 100 coin pack for the best value — 25% more than individual purchases!</div>
+              <div class="time">5 minutes ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE PAGE -->
+      <div class="dash-page" id="page-profile">
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="profile-avatar" id="profile-avatar">U</div>
+            <div>
+              <h3 id="profile-name">User</h3>
+              <p id="profile-email" style="color:var(--text2);font-size:14px">user@email.com</p>
+              <div class="plan-badge" id="profile-plan"><i class="fa-solid fa-crown"></i> Starter Plan</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div class="form-group">
+              <label>Display Name</label>
+              <input type="text" id="edit-name" placeholder="Your name">
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="text" id="edit-email" placeholder="Email" readonly style="opacity:.6">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="saveProfile()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px">
+          <h3 style="font-size:15px;margin-bottom:16px"><i class="fa-solid fa-shield" style="color:var(--accent)"></i> Security</h3>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Change your account password below.</div>
+          <div class="form-group">
+            <label>New Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="new-pw" placeholder="Enter new password" oninput="checkStrength2(this)">
+              <span class="pw-toggle" onclick="togglePw('new-pw',this)"><i class="fa-solid fa-eye"></i></span>
+            </div>
+            <div class="strength-bar"><span id="sb21"></span><span id="sb22"></span><span id="sb23"></span><span id="sb24"></span></div>
+            <div class="strength-label" id="sl2"></div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="changePw()"><i class="fa-solid fa-key"></i> Update Password</button>
+          <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+            <button class="btn btn-danger btn-sm" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCS PAGE -->
+      <div class="dash-page" id="page-docs">
+        <div class="docs-layout">
+          <div class="docs-nav">
+            <a class="active" onclick="showDoc('getting-started')"><i class="fa-solid fa-play"></i> Getting Started</a>
+            <a onclick="showDoc('adding-bots')"><i class="fa-brands fa-whatsapp"></i> Adding Bots</a>
+            <a onclick="showDoc('coins')"><i class="fa-solid fa-coins"></i> Coins & Billing</a>
+            <a onclick="showDoc('plans')"><i class="fa-solid fa-tag"></i> Plans</a>
+            <a onclick="showDoc('api')"><i class="fa-solid fa-code"></i> API Reference</a>
+            <a onclick="showDoc('faq')"><i class="fa-solid fa-circle-question"></i> FAQ</a>
+          </div>
+          <div class="docs-content" id="doc-content">
+            <h2>Getting Started with NexHost</h2>
+            <p>Welcome to NexHost — the fastest way to host your WhatsApp bots. Follow this guide to go from zero to live in under 5 minutes.</p>
+            <h3>Step 1: Create Your Account</h3>
+            <p>Sign up with your email and password. You'll receive 10 free starter coins credited immediately to your wallet.</p>
+            <h3>Step 2: Add Your Bot</h3>
+            <p>Navigate to "Add Bot" in your sidebar. Enter your WhatsApp number with the full country code (e.g. 2348056473526 for Nigeria).</p>
+            <div class="code-block">Format: [country_code][number]<br>Nigeria example: 2348056473526<br>UK example: 447911123456<br>USA example: 12125551234</div>
+            <h3>Step 3: Choose a Plan</h3>
+            <p>Select Starter (free), Basic (2 coins/day), or Pro (5 coins/day). Coins are deducted from your balance daily.</p>
+            <h3>Step 4: Monitor Your Bot</h3>
+            <p>Use the Statistics page for real-time data, message counts, server load, and uptime monitoring.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPPORT PAGE -->
+      <div class="dash-page" id="page-support">
+        <div class="support-grid">
+          <div class="support-card" onclick="toast('Opening Discord...','info')">
+            <i class="fa-brands fa-discord"></i>
+            <h3>Discord Server</h3>
+            <p>Join our community for instant help and updates.</p>
+          </div>
+          <div class="support-card" onclick="toast('Opening WhatsApp support...','info')">
+            <i class="fa-brands fa-whatsapp"></i>
+            <h3>WhatsApp Support</h3>
+            <p>Chat directly with our support team on WhatsApp.</p>
+          </div>
+          <div class="support-card" onclick="toast('Opening email client...','info')">
+            <i class="fa-solid fa-envelope"></i>
+            <h3>Email Support</h3>
+            <p>Send us an email at support@nexhost.com</p>
+          </div>
+          <div class="support-card" onclick="showPage('docs')">
+            <i class="fa-solid fa-book"></i>
+            <h3>Documentation</h3>
+            <p>Find answers in our comprehensive knowledge base.</p>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:600px">
+          <h3 style="font-size:15px;margin-bottom:16px"><i class="fa-solid fa-message" style="color:var(--accent)"></i> Send a Support Ticket</h3>
+          <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="ticket-subject" placeholder="Briefly describe your issue">
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="ticket-body" placeholder="Describe your issue in detail..." style="height:120px;resize:vertical"></textarea>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="submitTicket()"><i class="fa-solid fa-paper-plane"></i> Send Ticket</button>
+        </div>
+      </div>
+
+      <!-- ADMIN PAGE -->
+      <div class="dash-page" id="page-admin">
+        <div style="background:rgba(255,214,0,0.05);border:1px solid rgba(255,214,0,0.2);border-radius:14px;padding:16px;margin-bottom:24px;display:flex;align-items:center;gap:12px">
+          <i class="fa-solid fa-crown" style="color:var(--yellow);font-size:20px"></i>
+          <div>
+            <div style="font-family:Syne,sans-serif;font-weight:700">Admin Panel</div>
+            <div style="font-size:13px;color:var(--text2)">Full system access — manage all users, bots, and plans.</div>
+          </div>
+        </div>
+        <div class="admin-grid">
+          <div class="admin-stat"><div class="val" id="admin-users">0</div><div class="lbl">Total Users</div></div>
+          <div class="admin-stat"><div class="val" id="admin-bots">0</div><div class="lbl">Total Bots</div></div>
+          <div class="admin-stat"><div class="val" id="admin-coins">0</div><div class="lbl">Coins Distributed</div></div>
+          <div class="admin-stat"><div class="val">$0</div><div class="lbl">Total Revenue</div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
+          <h3 style="font-size:15px;margin-bottom:16px"><i class="fa-solid fa-users" style="color:var(--accent)"></i> Registered Users</h3>
+          <div style="overflow-x:auto">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>Name</th><th>Email</th><th>Plan</th><th>Coins</th><th>Bots</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-table">
+                <tr><td colspan="6" style="color:var(--text3);text-align:center;padding:20px">No users yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px">
+          <h3 style="font-size:15px;margin-bottom:16px"><i class="fa-solid fa-sliders" style="color:var(--yellow)"></i> Admin Actions</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="adminGiveCoins()"><i class="fa-solid fa-coins"></i> Give Coins to User</button>
+            <button class="btn btn-ghost btn-sm" onclick="toast('Feature coming soon','info')"><i class="fa-solid fa-broadcast-tower"></i> Broadcast Message</button>
+            <button class="btn btn-danger btn-sm" onclick="toast('System restarted (demo)','info')"><i class="fa-solid fa-rotate"></i> Restart All Bots</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- =================== MODALS =================== -->
+<!-- LOGIN -->
+<div class="overlay hidden" id="modal-login">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal('login')"><i class="fa-solid fa-xmark"></i></div>
+    <h2>Welcome Back</h2>
+    <p class="sub">Sign in to your NexHost account</p>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="login-email" placeholder="you@email.com">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="login-pw" placeholder="Your password">
+        <span class="pw-toggle" onclick="togglePw('login-pw',this)"><i class="fa-solid fa-eye"></i></span>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()" style="margin-top:8px"><i class="fa-solid fa-arrow-right-to-bracket"></i> Login</button>
+    <div style="text-align:center;margin-top:20px;font-size:14px;color:var(--text2)">
+      Don't have an account? <span style="color:var(--accent);cursor:pointer" onclick="closeModal('login');showModal('signup')">Sign up free</span>
+    </div>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div class="overlay hidden" id="modal-signup">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal('signup')"><i class="fa-solid fa-xmark"></i></div>
+    <h2>Create Account</h2>
+    <p class="sub">Join NexHost — 10 free coins on signup!</p>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="signup-name" placeholder="Your full name">
+    </div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="signup-email" placeholder="you@email.com">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="signup-pw" placeholder="Create a strong password" oninput="checkStrength(this)">
+        <span class="pw-toggle" onclick="togglePw('signup-pw',this)"><i class="fa-solid fa-eye"></i></span>
+      </div>
+      <div class="strength-bar">
+        <span id="sb1"></span><span id="sb2"></span><span id="sb3"></span><span id="sb4"></span>
+      </div>
+      <div class="strength-label" id="strength-label"></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="doSignup()" style="margin-top:8px"><i class="fa-solid fa-user-plus"></i> Create Account & Get 10 Coins</button>
+    <div style="text-align:center;margin-top:20px;font-size:14px;color:var(--text2)">
+      Already have an account? <span style="color:var(--accent);cursor:pointer" onclick="closeModal('signup');showModal('login')">Login</span>
+    </div>
+  </div>
+</div>
+
+<!-- BUY COINS CONFIRM -->
+<div class="overlay hidden" id="modal-buy">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal('buy')"><i class="fa-solid fa-xmark"></i></div>
+    <h2>Buy Coins</h2>
+    <p class="sub" id="buy-desc">Confirm your coin purchase</p>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;margin-bottom:20px">
+      <div style="font-size:40px;margin-bottom:8px">🪙</div>
+      <div id="buy-coins-amount" style="font-family:Syne,sans-serif;font-size:32px;font-weight:800;color:var(--yellow)">40</div>
+      <div style="color:var(--text2);font-size:14px">coins for <span id="buy-price-show" style="color:var(--text);font-weight:700">$1.00</span></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="confirmBuy()"><i class="fa-solid fa-credit-card"></i> Complete Purchase (Demo)</button>
+    <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text3)"><i class="fa-solid fa-lock"></i> Secure checkout via Stripe (demo mode)</div>
+  </div>
+</div>
+
+<script>
+// ====================== STATE ======================
+let users = JSON.parse(localStorage.getItem('nh_users') || '[]');
+let currentUser = JSON.parse(sessionStorage.getItem('nh_current') || 'null');
+let pendingBuy = null;
+
+const ADMIN = { email: '2349049460676@nexhost.com', phone: '2349049460676', password: 'ibraheem123' };
+
+// ====================== AUTH ======================
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-pw').value;
+  if (!email || !pw) return toast('Please fill all fields','error');
+
+  // Admin login - check both email and phone format
+  const isAdminLogin = (email === ADMIN.email || email === ADMIN.phone || email === '+2349049460676' || email === '2349049460676') && pw === ADMIN.password;
+  if (isAdminLogin) {
+    let adminUser = users.find(u => u.email === ADMIN.email);
+    if (!adminUser) {
+      adminUser = { id: 'admin', name: 'Admin', email: ADMIN.email, password: ADMIN.password, coins: 9999, plan: 'pro', bots: [], isAdmin: true, createdAt: new Date().toISOString() };
+      users.push(adminUser);
+      saveUsers();
+    }
+    loginUser(adminUser);
+    return;
+  }
+
+  const user = users.find(u => u.email === email && u.password === pw);
+  if (!user) return toast('Invalid email or password','error');
+  loginUser(user);
+}
+
+function doSignup() {
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pw = document.getElementById('signup-pw').value;
+  if (!name || !email || !pw) return toast('Please fill all fields','error');
+  if (pw.length < 6) return toast('Password must be at least 6 characters','error');
+  if (users.find(u => u.email === email)) return toast('Email already registered','error');
+  
+  const user = { id: Date.now().toString(), name, email, password: pw, coins: 10, plan: 'starter', bots: [], isAdmin: false, createdAt: new Date().toISOString() };
+  users.push(user);
+  saveUsers();
+  loginUser(user);
+  toast('Account created! 10 coins credited 🎉','success');
+}
+
+function loginUser(user) {
+  currentUser = user;
+  sessionStorage.setItem('nh_current', JSON.stringify(user));
+  closeModal('login');
+  closeModal('signup');
+  showDashboard();
+}
+
+function logout() {
+  currentUser = null;
+  sessionStorage.removeItem('nh_current');
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('landing').style.display = 'block';
+  toast('Logged out successfully','info');
+}
+
+function saveUsers() {
+  localStorage.setItem('nh_users', JSON.stringify(users));
+}
+
+function updateCurrentUser() {
+  const idx = users.findIndex(u => u.id === currentUser.id);
+  if (idx !== -1) { users[idx] = currentUser; saveUsers(); }
+  sessionStorage.setItem('nh_current', JSON.stringify(currentUser));
+}
+
+// ====================== DASHBOARD ======================
+function showDashboard() {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  updateDashboardUI();
+  showPage('overview');
+  startRealTimeUpdates();
+  if (currentUser.isAdmin) document.getElementById('admin-nav').style.display = 'block';
+}
+
+function updateDashboardUI() {
+  const u = currentUser;
+  const initial = u.name.charAt(0).toUpperCase();
+  document.getElementById('sidebar-avatar').textContent = initial;
+  document.getElementById('header-avatar').textContent = initial;
+  document.getElementById('sidebar-name').textContent = u.name;
+  document.getElementById('sidebar-plan').textContent = u.isAdmin ? '👑 Admin' : capitalize(u.plan) + ' Plan';
+  document.getElementById('profile-avatar').textContent = initial;
+  document.getElementById('profile-name').textContent = u.name;
+  document.getElementById('profile-email').textContent = u.email;
+  document.getElementById('edit-name').value = u.name;
+  document.getElementById('edit-email').value = u.email;
+  const planEl = document.getElementById('profile-plan');
+  planEl.innerHTML = (u.isAdmin ? '<i class="fa-solid fa-crown"></i> Admin' : `<i class="fa-solid fa-tag"></i> ${capitalize(u.plan)} Plan`);
+  updateStats();
+  updateBotsList();
+  if (u.isAdmin) updateAdminPanel();
+}
+
+function updateStats() {
+  const u = currentUser;
+  document.getElementById('stat-bots').textContent = (u.bots||[]).length;
+  document.getElementById('stat-coins').textContent = u.isAdmin ? '∞' : u.coins;
+  document.getElementById('wallet-coins').textContent = u.isAdmin ? '∞' : u.coins;
+  document.getElementById('bot-count-badge').textContent = (u.bots||[]).length;
+}
+
+let rtInterval = null;
+function startRealTimeUpdates() {
+  if (rtInterval) clearInterval(rtInterval);
+  let msgs = 0;
+  rtInterval = setInterval(() => {
+    if (!currentUser) return clearInterval(rtInterval);
+    msgs += Math.floor(Math.random()*5);
+    document.getElementById('stat-msgs').textContent = msgs;
+    document.getElementById('live-msgs').textContent = msgs;
+    const load = Math.floor(Math.random()*40+20);
+    document.getElementById('server-load').textContent = load + '%';
+  }, 2000);
+}
+
+// ====================== PAGES ======================
+const pageTitles = {
+  overview: ['Overview','Welcome back! Here\'s your dashboard.'],
+  bots: ['My Bots','Manage your WhatsApp bots.'],
+  'add-bot': ['Add Bot','Register a new WhatsApp number.'],
+  stats: ['Statistics','Real-time performance data.'],
+  wallet: ['Wallet','Manage your coin balance.'],
+  notifications: ['Notifications','Stay up to date.'],
+  profile: ['Profile','Manage your account.'],
+  docs: ['Documentation','Learn how to use NexHost.'],
+  support: ['Support','Get help from our team.'],
+  admin: ['Admin Panel','Full system control.']
+};
+
+function showPage(id) {
+  document.querySelectorAll('.dash-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  const titles = pageTitles[id] || [id,''];
+  document.getElementById('page-title').textContent = titles[0];
+  document.getElementById('page-sub').textContent = titles[1];
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.toLowerCase().includes(titles[0].toLowerCase().split(' ')[0])) n.classList.add('active');
+  });
+  // Close sidebar on mobile
+  if (window.innerWidth < 900) document.getElementById('sidebar').classList.remove('open');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ====================== BOTS ======================
+function addBot() {
+  const nick = document.getElementById('bot-nick').value.trim();
+  const cc = document.getElementById('country-code').value;
+  const num = document.getElementById('bot-number').value.replace(/\D/g,'');
+  const plan = document.getElementById('bot-plan').value;
+
+  if (!num) return toast('Please enter a phone number','error');
+  if (num.length < 6) return toast('Phone number too short','error');
+
+  const fullNum = cc + num;
+  if ((currentUser.bots||[]).find(b => b.number === fullNum)) return toast('Bot with this number already exists','error');
+  
+  // Check coins for paid plan
+  if (!currentUser.isAdmin) {
+    if (plan === 'basic' && currentUser.coins < 2) return toast('Not enough coins for Basic plan','error');
+    if (plan === 'pro' && currentUser.coins < 5) return toast('Not enough coins for Pro plan','error');
+  }
+
+  const bot = { id: Date.now().toString(), number: fullNum, nickname: nick || 'Bot ' + fullNum, plan, status: 'online', addedAt: new Date().toISOString(), messages: 0 };
+  if (!currentUser.bots) currentUser.bots = [];
+  currentUser.bots.push(bot);
+  updateCurrentUser();
+  updateStats();
+  updateBotsList();
+  document.getElementById('bot-number').value = '';
+  document.getElementById('bot-nick').value = '';
+  toast(`Bot +${fullNum} added successfully! 🤖`,'success');
+  addActivity(`Added bot +${fullNum} (${capitalize(plan)} plan)`);
+  showPage('bots');
+}
+
+function updateBotsList() {
+  const bots = currentUser.bots || [];
+  const list = document.getElementById('bots-list');
+  document.getElementById('bots-count-label').textContent = bots.length + ' bot' + (bots.length!==1?'s':'') + ' registered';
+  
+  if (!bots.length) {
+    list.innerHTML = `<div style="background:var(--card);border:1px dashed var(--border2);border-radius:14px;padding:40px;text-align:center;color:var(--text2)">
+      <i class="fa-brands fa-whatsapp" style="font-size:36px;color:var(--text3);display:block;margin-bottom:12px"></i>
+      <p>No bots yet. Add your first WhatsApp bot!</p>
+      <button class="btn btn-primary btn-sm" style="margin-top:16px" onclick="showPage('add-bot')"><i class="fa-solid fa-plus"></i> Add Bot</button>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = bots.map(b => `
+    <div class="bot-card">
+      <div class="bot-avatar"><i class="fa-brands fa-whatsapp" style="color:#fff"></i></div>
+      <div class="bot-info">
+        <div class="num">${b.nickname}</div>
+        <div style="font-size:12px;color:var(--text3)">+${b.number}</div>
+        <div class="plan-tag">${capitalize(b.plan)} Plan</div>
+      </div>
+      <div class="bot-status">
+        <div class="status-dot ${b.status}"></div>
+        ${capitalize(b.status)}
+      </div>
+      <div class="bot-actions">
+        <button class="btn btn-ghost btn-sm" onclick="toggleBotStatus('${b.id}')">
+          <i class="fa-solid fa-${b.status==='online'?'pause':'play'}"></i>
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="removeBot('${b.id}')">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleBotStatus(id) {
+  const bot = currentUser.bots.find(b => b.id === id);
+  if (!bot) return;
+  bot.status = bot.status === 'online' ? 'offline' : 'online';
+  updateCurrentUser();
+  updateBotsList();
+  toast(`Bot ${bot.status === 'online' ? 'started' : 'stopped'}`, bot.status === 'online' ? 'success' : 'info');
+}
+
+function removeBot(id) {
+  currentUser.bots = (currentUser.bots||[]).filter(b => b.id !== id);
+  updateCurrentUser();
+  updateStats();
+  updateBotsList();
+  toast('Bot removed','info');
+}
+
+// ====================== WALLET / COINS ======================
+let buyData = {};
+function buyCoin(coins, dollars) {
+  buyData = { coins, dollars };
+  document.getElementById('buy-coins-amount').textContent = coins;
+  document.getElementById('buy-price-show').textContent = '$' + dollars + '.00';
+  document.getElementById('buy-desc').textContent = `Get ${coins} coins for $${dollars}`;
+  showModal('buy');
+}
+
+function confirmBuy() {
+  if (!currentUser) return;
+  currentUser.coins = (currentUser.coins || 0) + buyData.coins;
+  updateCurrentUser();
+  updateStats();
+  addTx(`+${buyData.coins} coins purchased for $${buyData.dollars}.00`);
+  addActivity(`Purchased ${buyData.coins} coins for $${buyData.dollars}`);
+  closeModal('buy');
+  toast(`${buyData.coins} coins added to your wallet! 🪙`,'success');
+}
+
+function addTx(text) {
+  const txList = document.getElementById('tx-list');
+  const div = document.createElement('div');
+  div.style.cssText = 'font-size:13px;color:var(--text2);padding:8px 0;border-bottom:1px solid var(--border)';
+  div.innerHTML = `<i class="fa-solid fa-coins" style="color:var(--yellow)"></i> ${text} <span style="float:right;color:var(--text3)">${new Date().toLocaleTimeString()}</span>`;
+  txList.insertBefore(div, txList.firstChild);
+}
+
+function addActivity(text) {
+  const al = document.getElementById('activity-list');
+  if (al.querySelector('p')) al.innerHTML = '';
+  const div = document.createElement('div');
+  div.style.cssText = 'font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px';
+  div.innerHTML = `<i class="fa-solid fa-circle-dot" style="color:var(--accent);font-size:8px"></i> ${text}`;
+  al.insertBefore(div, al.firstChild);
+  if (al.children.length > 5) al.removeChild(al.lastChild);
+}
+
+// ====================== PROFILE ======================
+function saveProfile() {
+  const name = document.getElementById('edit-name').value.trim();
+  if (!name) return toast('Name cannot be empty','error');
+  currentUser.name = name;
+  updateCurrentUser();
+  updateDashboardUI();
+  toast('Profile updated successfully','success');
+}
+
+function changePw() {
+  const pw = document.getElementById('new-pw').value;
+  if (!pw || pw.length < 6) return toast('Password must be at least 6 characters','error');
+  currentUser.password = pw;
+  updateCurrentUser();
+  document.getElementById('new-pw').value = '';
+  toast('Password updated successfully','success');
+}
+
+// ====================== ADMIN ======================
+function updateAdminPanel() {
+  document.getElementById('admin-users').textContent = users.length;
+  const totalBots = users.reduce((a,u) => a + (u.bots||[]).length, 0);
+  document.getElementById('admin-bots').textContent = totalBots;
+  document.getElementById('admin-coins').textContent = users.reduce((a,u) => a + (u.coins||0), 0);
+  const tbody = document.getElementById('admin-users-table');
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td><span style="background:rgba(0,212,255,0.1);color:var(--accent);border-radius:100px;padding:2px 8px;font-size:11px">${u.isAdmin?'👑 Admin':capitalize(u.plan)}</span></td>
+      <td style="color:var(--yellow)">${u.isAdmin?'∞':u.coins}</td>
+      <td>${(u.bots||[]).length}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="giveCoinsTo('${u.id}')"><i class="fa-solid fa-coins"></i></button></td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" style="color:var(--text3);text-align:center;padding:20px">No users yet</td></tr>';
+}
+
+function giveCoinsTo(uid) {
+  const amount = parseInt(prompt('How many coins to give?') || '0');
+  if (!amount || amount <= 0) return;
+  const u = users.find(u => u.id === uid);
+  if (!u) return;
+  u.coins = (u.coins||0) + amount;
+  saveUsers();
+  if (currentUser.id === uid) { currentUser.coins = u.coins; sessionStorage.setItem('nh_current', JSON.stringify(currentUser)); }
+  updateAdminPanel();
+  toast(`Gave ${amount} coins to ${u.name}`,'success');
+}
+
+function adminGiveCoins() {
+  toast('Use the coins button next to each user in the table below','info');
+}
+
+// ====================== NOTIFICATIONS ======================
+function clearNotifs() {
+  document.querySelectorAll('.notif-item.unread').forEach(n => n.classList.remove('unread'));
+  document.getElementById('notif-badge').style.display = 'none';
+  document.getElementById('notif-dot').style.display = 'none';
+  toast('All notifications marked as read','success');
+}
+
+// ====================== DOCS ======================
+const docContent = {
+  'getting-started': `<h2>Getting Started</h2><p>Welcome to NexHost! Get your WhatsApp bot live in minutes.</p><h3>1. Create Account</h3><p>Sign up with email. You receive 10 free starter coins instantly.</p><h3>2. Add Your Bot</h3><p>Go to Add Bot, enter your WhatsApp number with country code.</p><div class="code-block">Nigeria: 2348056473526\nUK: 447911123456\nUSA: 12125551234</div><h3>3. Choose Plan</h3><p>Starter is free. Basic costs 2 coins/day. Pro costs 5 coins/day.</p>`,
+  'adding-bots': `<h2>Adding Bots</h2><p>Enter your WhatsApp number with full international dialing code (no + sign).</p><h3>Number Format</h3><div class="code-block">✅ 2348056473526 (Nigeria)\n✅ 447911123456 (UK)\n❌ 08056473526 (missing country code)\n❌ +2348056473526 (remove the +)</div><h3>Bot Plans</h3><p>Each bot can have its own plan. Mix and match as needed.</p>`,
+  'coins': `<h2>Coins & Billing</h2><p>NexHost uses a coin-based economy. Coins are deducted daily per bot.</p><h3>Daily Costs</h3><div class="code-block">Starter: 0 coins/day\nBasic:   2 coins/day\nPro:     5 coins/day</div><h3>Buying Coins</h3><p>Go to your Wallet and select a coin pack. Payments via Stripe.</p><div class="code-block">40 coins  = $1.00\n100 coins = $2.00 (best value)\n300 coins = $5.00 (mega pack)</div>`,
+  'plans': `<h2>Plans</h2><h3>🆓 Starter</h3><p>Free. 1 bot, 500 messages/day. Perfect to test your bot.</p><h3>⚡ Basic</h3><p>2 coins/day. Up to 3 bots, 5,000 messages/day. Priority support.</p><h3>🚀 Pro</h3><p>5 coins/day. Unlimited bots and messages. Dedicated resources.</p>`,
+  'api': `<h2>API Reference</h2><p>NexHost provides a REST API for advanced users.</p><h3>Authentication</h3><div class="code-block">Authorization: Bearer YOUR_API_KEY</div><h3>Get Bot Status</h3><div class="code-block">GET /api/bots/:id/status</div><h3>Send Message</h3><div class="code-block">POST /api/bots/:id/send\n{\n  "to": "2348056473526",\n  "message": "Hello!"\n}</div>`,
+  'faq': `<h2>FAQ</h2><h3>What happens when coins run out?</h3><p>Paid bots pause automatically. Starter bots keep running. Top up to resume.</p><h3>Can I change plans?</h3><p>Yes! Go to your bot settings and change the plan anytime.</p><h3>How do I get more coins?</h3><p>Buy from your Wallet page. New users get 10 free coins on signup.</p><h3>Is my WhatsApp number safe?</h3><p>Absolutely. We use encrypted connections and never share your data.</p>`
+};
+
+function showDoc(id) {
+  document.getElementById('doc-content').innerHTML = docContent[id] || '';
+  document.querySelectorAll('.docs-nav a').forEach(a => a.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ====================== SUPPORT ======================
+function submitTicket() {
+  const sub = document.getElementById('ticket-subject').value.trim();
+  const body = document.getElementById('ticket-body').value.trim();
+  if (!sub || !body) return toast('Please fill all ticket fields','error');
+  document.getElementById('ticket-subject').value = '';
+  document.getElementById('ticket-body').value = '';
+  toast('Support ticket submitted! We\'ll respond within 24 hours.','success');
+}
+
+function openSupport() {
+  if (currentUser) showPage('support');
+  else showModal('signup');
+}
+
+// ====================== MODALS ======================
+function showModal(id) {
+  document.getElementById('modal-' + id).classList.remove('hidden');
+}
+function closeModal(id) {
+  document.getElementById('modal-' + id).classList.add('hidden');
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.overlay').forEach(ov => {
+  ov.addEventListener('click', e => {
+    if (e.target === ov) {
+      const id = ov.id.replace('modal-','');
+      closeModal(id);
+    }
+  });
+});
+
+// ====================== UI UTILS ======================
+function toast(msg, type='info') {
+  const icons = { success:'fa-circle-check', error:'fa-circle-xmark', info:'fa-circle-info' };
+  const div = document.createElement('div');
+  div.className = 'toast ' + type;
+  div.innerHTML = `<i class="fa-solid ${icons[type]}"></i> ${msg}`;
+  document.getElementById('toast-container').appendChild(div);
+  setTimeout(() => { div.style.animation='slideOut .3s ease forwards'; setTimeout(() => div.remove(), 300); }, 3500);
+}
+
+function togglePw(id, el) {
+  const inp = document.getElementById(id);
+  const isText = inp.type === 'text';
+  inp.type = isText ? 'password' : 'text';
+  el.innerHTML = isText ? '<i class="fa-solid fa-eye"></i>' : '<i class="fa-solid fa-eye-slash"></i>';
+}
+
+function checkStrength(inp) {
+  const val = inp.value;
+  const bars = [document.getElementById('sb1'),document.getElementById('sb2'),document.getElementById('sb3'),document.getElementById('sb4')];
+  const lbl = document.getElementById('strength-label');
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const colors = ['var(--red)','var(--red)','var(--yellow)','var(--green)','var(--green)'];
+  const labels = ['','Weak','Fair','Good','Strong'];
+  bars.forEach((b,i) => { b.style.background = i < score ? colors[score] : 'var(--border)'; });
+  lbl.textContent = labels[score];
+  lbl.style.color = colors[score];
+}
+
+function checkStrength2(inp) {
+  const val = inp.value;
+  const bars = [document.getElementById('sb21'),document.getElementById('sb22'),document.getElementById('sb23'),document.getElementById('sb24')];
+  const lbl = document.getElementById('sl2');
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const colors = ['var(--red)','var(--red)','var(--yellow)','var(--green)','var(--green)'];
+  const labels = ['','Weak','Fair','Good','Strong'];
+  bars.forEach((b,i) => { b.style.background = i < score ? colors[score] : 'var(--border)'; });
+  lbl.textContent = labels[score];
+  lbl.style.color = colors[score];
+}
+
+function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+function toggleMobileNav() {
+  document.getElementById('mobileNav').classList.toggle('open');
+}
+
+function scrollSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior:'smooth' });
+  document.getElementById('mobileNav').classList.remove('open');
+}
+
+// ====================== COUNTERS ======================
+function animCounter(id, target, suffix='') {
+  let n = 0; const step = Math.ceil(target/60);
+  const iv = setInterval(() => {
+    n = Math.min(n+step, target);
+    document.getElementById(id).textContent = n.toLocaleString() + suffix;
+    if (n >= target) clearInterval(iv);
+  }, 25);
+}
+setTimeout(() => {
+  animCounter('counter1', 1247);
+  animCounter('counter2', 3891);
+  animCounter('counter4', 89243);
+}, 500);
+
+// Simple stats chart with canvas
+function drawChart() {
+  const canvas = document.getElementById('statsChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 180;
+  const data = Array.from({length:20}, (_,i) => Math.floor(Math.random()*80+20));
+  const data2 = Array.from({length:20}, (_,i) => Math.floor(Math.random()*60+10));
+  const w = canvas.width, h = canvas.height, pad = 20, pts = data.length;
+  const xStep = (w - pad*2) / (pts-1);
+  const maxVal = 120;
+  
+  function drawLine(d, color) {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+    d.forEach((v,i) => {
+      const x = pad + i*xStep, y = h - pad - (v/maxVal)*(h-pad*2);
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  }
+  
+  ctx.clearRect(0,0,w,h);
+  // Grid
+  ctx.strokeStyle = 'rgba(30,45,69,0.5)'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad + (i/4)*(h-pad*2);
+    ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke();
+  }
+  
+  drawLine(data, '#00e676');
+  drawLine(data2, '#00d4ff');
+}
+
+// Check for existing session
+if (currentUser) {
+  showDashboard();
+}
+
+// Re-draw chart when stats page is shown
+const origShowPage = showPage;
+window.showPage = function(id) {
+  origShowPage(id);
+  if (id === 'stats') setTimeout(drawChart, 100);
+  if (id === 'admin' && currentUser?.isAdmin) updateAdminPanel();
+};
+
+// Keyboard shortcut: Escape to close modals
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.overlay:not(.hidden)').forEach(ov => {
+      closeModal(ov.id.replace('modal-',''));
+    });
+  }
+});
+
+
+// --- Scroll Reveal ---
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+function initReveal() {
+  document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
+    revealObserver.observe(el);
+  });
+}
+initReveal();
+
+// --- Navbar Scroll ---
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('nav');
+  if (window.scrollY > 50) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+}, { passive: true });
+
+// --- Magnetic Button Effect ---
+document.querySelectorAll('.btn-mag').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+  });
+  btn.addEventListener('mouseleave', () => {
+    btn.style.transform = '';
+  });
+});
+
+// --- Tilt Effect on Cards ---
+function initTilt() {
+  document.querySelectorAll('.plan-card, .feature-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      const tiltX = (y - 0.5) * 8;
+      const tiltY = (x - 0.5) * -8;
+      card.style.transform = `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-4px)`;
+      card.style.transition = 'transform 0.1s ease';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+      card.style.transition = 'transform 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+    });
+  });
+}
+initTilt();
+
+// --- Cursor Spotlight (subtle) ---
+const spotlight = document.createElement('div');
+spotlight.style.cssText = `
+  position: fixed; width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,212,255,0.04) 0%, transparent 70%);
+  pointer-events: none; z-index: 0; transform: translate(-50%,-50%);
+  transition: opacity 0.3s ease; will-change: left, top;
+`;
+document.body.appendChild(spotlight);
+let spotX = 0, spotY = 0;
+window.addEventListener('mousemove', e => {
+  spotX = e.clientX; spotY = e.clientY;
+}, { passive: true });
+function moveSpotlight() {
+  spotlight.style.left = spotX + 'px';
+  spotlight.style.top = spotY + 'px';
+  requestAnimationFrame(moveSpotlight);
+}
+moveSpotlight();
+
+// --- Number pop animation on stat update ---
+const origStartRT = startRealTimeUpdates;
+startRealTimeUpdates = function() {
+  if (rtInterval) clearInterval(rtInterval);
+  let msgs = 0;
+  rtInterval = setInterval(() => {
+    if (!currentUser) return clearInterval(rtInterval);
+    msgs += Math.floor(Math.random() * 5);
+    const msgsEl = document.getElementById('stat-msgs');
+    const liveMsgsEl = document.getElementById('live-msgs');
+    if (msgsEl) { msgsEl.textContent = msgs; msgsEl.classList.remove('num-pop'); void msgsEl.offsetWidth; msgsEl.classList.add('num-pop'); }
+    if (liveMsgsEl) { liveMsgsEl.textContent = msgs; liveMsgsEl.classList.remove('num-pop'); void liveMsgsEl.offsetWidth; liveMsgsEl.classList.add('num-pop'); }
+    const load = Math.floor(Math.random() * 40 + 20);
+    const loadEl = document.getElementById('server-load');
+    if (loadEl) loadEl.textContent = load + '%';
+  }, 2000);
+};
+
+// --- Page in animation on showPage ---
+const origShowPageAnim = window.showPage;
+window.showPage = function(id) {
+  origShowPageAnim(id);
+  // Re-init magnetic buttons for dashboard
+  setTimeout(() => {
+    document.querySelectorAll('.btn-mag').forEach(btn => {
+      btn.onmousemove = e => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+      };
+      btn.onmouseleave = () => { btn.style.transform = ''; };
+    });
+  }, 100);
+};
+
+// --- Smooth counter with easing ---
+function animCounterEased(id, target, suffix = '') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let start = null;
+  const duration = 1800;
+  function easeOutExpo(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+  function step(ts) {
+    if (!start) start = ts;
+    const progress = Math.min((ts - start) / duration, 1);
+    const val = Math.floor(easeOutExpo(progress) * target);
+    el.textContent = val.toLocaleString() + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = target.toLocaleString() + suffix;
+  }
+  requestAnimationFrame(step);
+}
+
+// Override old counters with eased ones
+setTimeout(() => {
+  animCounterEased('counter1', 1247);
+  animCounterEased('counter2', 3891);
+  animCounterEased('counter4', 89243);
+}, 800);
+
+// --- Parallax on hero orbs ---
+window.addEventListener('mousemove', e => {
+  const orbs = document.querySelectorAll('.orb');
+  orbs.forEach((orb, i) => {
+    const speed = (i + 1) * 0.008;
+    const x = (e.clientX - window.innerWidth / 2) * speed;
+    const y = (e.clientY - window.innerHeight / 2) * speed;
+    orb.style.transform += ` translate(${x}px, ${y}px)`;
+  });
+}, { passive: true });
+
+// --- Staggered dashboard nav items on login ---
+function animateSidebarIn() {
+  const items = document.querySelectorAll('.nav-item');
+  items.forEach((item, i) => {
+    item.style.opacity = '0';
+    item.style.transform = 'translateX(-20px)';
+    setTimeout(() => {
+      item.style.transition = 'opacity 0.4s ease, transform 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+      item.style.opacity = '';
+      item.style.transform = '';
+    }, 100 + i * 50);
+  });
+}
+
+// Patch showDashboard to include sidebar animation
+const origShowDash = showDashboard;
+showDashboard = function() {
+  origShowDash();
+  animateSidebarIn();
+};
+
+// --- Live chart update animation ---
+function drawChartAnimated() {
+  const canvas = document.getElementById('statsChart');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 600;
+  canvas.height = 200;
+  const ctx = canvas.getContext('2d');
+  const pts = 24;
+  let data = Array.from({length: pts}, () => Math.floor(Math.random() * 80 + 20));
+  let data2 = Array.from({length: pts}, () => Math.floor(Math.random() * 60 + 10));
+  let animProgress = 0;
+
+  function draw() {
+    const w = canvas.width, h = canvas.height, pad = 24;
+    const xStep = (w - pad * 2) / (pts - 1);
+    const maxV = 120;
+    ctx.clearRect(0, 0, w, h);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(30,45,69,0.5)'; ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = pad + (i / 4) * (h - pad * 2);
+      ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(w - pad, y); ctx.stroke();
+    }
+
+    // Draw with animation progress clip
+    const drawPts = Math.ceil(animProgress * pts);
+
+    function drawLine(d, color, fillColor) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(pad, 0, (drawPts / pts) * (w - pad * 2), h);
+      ctx.clip();
+
+      // Fill
+      ctx.beginPath();
+      d.forEach((v, i) => {
+        const x = pad + i * xStep, y = h - pad - (v / maxV) * (h - pad * 2);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.lineTo(pad + (pts - 1) * xStep, h - pad);
+      ctx.lineTo(pad, h - pad);
+      ctx.closePath();
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+
+      // Line
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 10;
+      d.forEach((v, i) => {
+        const x = pad + i * xStep, y = h - pad - (v / maxV) * (h - pad * 2);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // Dots at data points
+      ctx.shadowBlur = 0;
+      d.slice(0, drawPts).forEach((v, i) => {
+        const x = pad + i * xStep, y = h - pad - (v / maxV) * (h - pad * 2);
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+      });
+      ctx.restore();
+    }
+
+    drawLine(data, '#00e676', 'rgba(0,230,118,0.07)');
+    drawLine(data2, '#00d4ff', 'rgba(0,212,255,0.05)');
+  }
+
+  function animate() {
+    animProgress += 0.03;
+    draw();
+    if (animProgress < 1) requestAnimationFrame(animate);
+    else {
+      animProgress = 1;
+      draw();
+      // Live update
+      setInterval(() => {
+        data.push(Math.floor(Math.random() * 80 + 20));
+        data.shift();
+        data2.push(Math.floor(Math.random() * 60 + 10));
+        data2.shift();
+        draw();
+      }, 2000);
+    }
+  }
+  animate();
+}
+
+// Override chart draw
+const origShowPageFinal = window.showPage;
+window.showPage = function(id) {
+  origShowPageFinal(id);
+  if (id === 'stats') setTimeout(drawChartAnimated, 150);
+};
+
+</script>
+</body>
+</html>
